@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using DioLive.Triangle.BindingModels;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
@@ -25,6 +28,16 @@ namespace DioLive.Triangle.ServerCore
 
             app.MapGet("/state", GetState);
             app.MapPost("/update", PostUpdate);
+
+            Task.Run(() =>
+            {
+                var requestPool = app.ApplicationServices.GetRequiredService<RequestPool>();
+                while (requestPool.IsCompleted)
+                {
+                    var request = requestPool.Take();
+                    
+                }
+            });
 
             app.Run(async (context) =>
             {

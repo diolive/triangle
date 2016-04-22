@@ -2,17 +2,17 @@
 
 namespace DioLive.Triangle.BindingModels
 {
-    public class UpdateResponse
+    public class StateResponse
     {
         [JsonConstructor]
-        public UpdateResponse(CurrentDot player, NeighbourDot[] neighbours, RadarDot[] radar)
+        public StateResponse(CurrentDot current, NeighbourDot[] neighbours, RadarDot[] radar)
         {
-            this.Player = player;
+            this.Current = current;
             this.Neighbours = neighbours;
             this.Radar = radar;
         }
 
-        public CurrentDot Player { get; }
+        public CurrentDot Current { get; }
 
         public NeighbourDot[] Neighbours { get; }
 

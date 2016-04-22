@@ -18,6 +18,7 @@
     }
   },
   "dependencies": {
+    "DioLive.Triangle.DataStorage": "1.0.0-*",
     "Newtonsoft.Json": "8.0.3"
   }
 }

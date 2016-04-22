@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using DioLive.Triangle.BindingModels;
+using DioLive.Triangle.DataStorage;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace DioLive.Triangle.ServerCore
 {
@@ -19,6 +17,7 @@ namespace DioLive.Triangle.ServerCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<RequestPool>();
+            services.AddSingleton<Space>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -26,16 +25,33 @@ namespace DioLive.Triangle.ServerCore
         {
             app.UseIISPlatformHandler();
 
+            app.MapPost("/create", PostCreate);
             app.MapGet("/state", GetState);
             app.MapPost("/update", PostUpdate);
 
             Task.Run(() =>
             {
                 var requestPool = app.ApplicationServices.GetRequiredService<RequestPool>();
-                while (requestPool.IsCompleted)
+                var space = app.ApplicationServices.GetRequiredService<Space>();
+
+                Task.Run(async () =>
                 {
-                    var request = requestPool.Take();
-                    
+                    DateTime checkPoint = DateTime.UtcNow;
+                    while (true)
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds(100));
+                        DateTime now = DateTime.UtcNow;
+                        space.Update(now - checkPoint);
+                        checkPoint = now;
+                    }
+                });
+
+                while (!requestPool.IsCompleted)
+                {
+                    UpdateRequest request = requestPool.Take();
+                    Dot dot = space.FindById(request.Id);
+                    dot.MoveDirection = request.MoveDirection;
+                    dot.Beaming = request.Beaming;
                 }
             });
 
@@ -45,17 +61,33 @@ namespace DioLive.Triangle.ServerCore
             });
         }
 
+        private void PostCreate(IApplicationBuilder app)
+        {
+            app.Run(async (context) =>
+            {
+                var space = app.ApplicationServices.GetRequiredService<Space>();
+
+                Dot newDot = new Dot(1, 10, 20);
+                space.Add(newDot);
+                await context.Response.WriteJsonAsync(newDot.Id);
+            });
+        }
+
         private void GetState(IApplicationBuilder app)
         {
             app.Run(async (context) =>
             {
-                var requestPool = context.RequestServices.GetRequiredService<RequestPool>();
-                var updateRequests = new List<UpdateRequest>();
-                while (requestPool.Count > 0)
-                {
-                    updateRequests.Add(requestPool.Take());
-                }
-                await context.Response.WriteAsync(JsonConvert.SerializeObject(updateRequests.ToArray()), Encoding.ASCII);
+                var space = app.ApplicationServices.GetRequiredService<Space>();
+
+                Dot dot = space.FindById(Guid.Parse(context.Request.Query["Id"].First()));
+                CurrentDot current = new CurrentDot(dot.State, dot.MoveDirection, dot.Beaming);
+                NeighbourDot[] neighbours = space.GetNeighbours((int)dot.X, (int)dot.Y)
+                    .Select(d => new NeighbourDot(d.Team, (int)(d.X - dot.X), (int)(d.Y - dot.Y), d.State == DotState.Stunned, d.Beaming))
+                    .ToArray();
+                RadarDot[] radar = space.GetRadar(dot.Team, (int)dot.X, (int)dot.Y)
+                    .Select(d => new RadarDot(d.Team, (int)(d.X - dot.X), (int)(d.Y - dot.Y)))
+                    .ToArray();
+                await context.Response.WriteJsonAsync(new StateResponse(current, neighbours, radar));
             });
         }
 
@@ -63,10 +95,7 @@ namespace DioLive.Triangle.ServerCore
         {
             app.Run(async (context) =>
             {
-                byte[] buffer = new byte[context.Request.ContentLength ?? 0];
-                await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
-                string body = Encoding.ASCII.GetString(buffer);
-                var updateRequest = JsonConvert.DeserializeObject<UpdateRequest>(body);
+                var updateRequest = await context.Request.ReadJsonAsync<UpdateRequest>();
                 var requestPool = context.RequestServices.GetRequiredService<RequestPool>();
                 requestPool.Add(updateRequest);
             });

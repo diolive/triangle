@@ -24,5 +24,9 @@
         public float? Beaming { get; }
 
         public float MoveDirection { get; }
+
+        public int X { get; set; }
+
+        public int Y { get; set; }
     }
 }

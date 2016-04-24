@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0-*",
+  "description": "DioLive.Triangle.CoreClient Console Application",
+  "authors": [ "Dio" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "DioLive.Triangle.ServerClient": "1.0.0-*",
+    "MonoGame.Framework.DesktopGL": "3.5.1.1679"
+  },
+
+  "commands": {
+    "DioLive.Triangle.CoreClient": "DioLive.Triangle.CoreClient"
+  },
+
+  "frameworks": {
+    "dnx451": {
+      "dependencies": {
+      }
+    }
+  }
+}

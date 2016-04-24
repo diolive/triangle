@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0-*",
+  "frameworks": {
+    "net45": {
+      "bin": {
+        "assembly": "../../../../../Program Files (x86)/MonoGame/v3.0/Assemblies/DesktopGL/MonoGame.Framework.dll"
+      },
+      "dependencies": {
+        "NVorbis": "1.0.0-*",
+        "OpenTK": "1.0.0-*"
+      }
+    }
+  }
+}

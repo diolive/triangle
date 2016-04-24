@@ -1,4 +1,4 @@
-﻿namespace DioLive.Triangle.DataStorage.Geometry
+﻿namespace DioLive.Triangle.Geometry
 {
     public struct Circle
     {

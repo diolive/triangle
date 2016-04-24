@@ -23,6 +23,8 @@ namespace DioLive.Triangle.DataStorage
 
         public float MoveDirection { get; set; }
 
+        public float Velocity { get; set; }
+
         public float? Beaming { get; set; }
 
         public DotState State { get; set; }

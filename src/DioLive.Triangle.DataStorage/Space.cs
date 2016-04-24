@@ -1,19 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DioLive.Triangle.DataStorage.Geometry;
+using DioLive.Triangle.Geometry;
 
 namespace DioLive.Triangle.DataStorage
 {
     public class Space
     {
+        public const float InitVelocity = 100f;
+
         private const int NeighbourhoodWidth = 500;
         private const int NeighbourhoodHeight = 500;
         private const int BeamLength = 250;
         private const int RadarWidth = 5000;
         private const int RadarHeight = 5000;
         private const int DotRadius = 25;
-        private const float DotVelocity = 0.25f;
+        private const float Deceleration = 10f;
 
         private readonly ICollection<Dot> dots;
 
@@ -55,10 +57,20 @@ namespace DioLive.Triangle.DataStorage
 
         public void Update(TimeSpan elapsedTime)
         {
-            foreach (var dot in this.dots.Where(dot => dot.State != DotState.Stunned))
+            double time = elapsedTime.TotalSeconds;
+            foreach (var dot in this.dots.Where(dot => dot.State != DotState.Stunned && dot.Velocity > 0))
             {
-                dot.X += (float)(Math.Cos(dot.MoveDirection) * elapsedTime.TotalMilliseconds * DotVelocity);
-                dot.Y += (float)(Math.Sin(dot.MoveDirection) * elapsedTime.TotalMilliseconds * DotVelocity);
+                double move = Math.Max(0, dot.Velocity * time - (Deceleration * time * time) / 2);
+                if (move > 0)
+                {
+                    dot.X += (float)(Math.Cos(dot.MoveDirection) * move);
+                    dot.Y += (float)(Math.Sin(dot.MoveDirection) * move);
+                    dot.Velocity = Math.Max(0f, (float)(dot.Velocity - Deceleration * time));
+                }
+                else
+                {
+                    dot.Velocity = 0f;
+                }
             }
 
             List<Dot> firedDots = new List<Dot>();
@@ -68,7 +80,7 @@ namespace DioLive.Triangle.DataStorage
                 firedDots.AddRange(this.dots.Except(new[] { dot }).Where(d => beam.CrossedWithCircle(new Circle(d.X, d.Y, DotRadius))));
             }
 
-            ILookup<Dot,Dot> firedDotsLookup = firedDots.ToLookup(dot => dot);
+            ILookup<Dot, Dot> firedDotsLookup = firedDots.ToLookup(dot => dot);
 
             List<Dot> destroyedDots = new List<Dot>();
             foreach (var dot in this.dots)

@@ -39,7 +39,7 @@ namespace DioLive.Triangle.ServerCore
                     DateTime checkPoint = DateTime.UtcNow;
                     while (true)
                     {
-                        await Task.Delay(TimeSpan.FromMilliseconds(100));
+                        await Task.Delay(TimeSpan.FromMilliseconds(40));
                         DateTime now = DateTime.UtcNow;
                         space.Update(now - checkPoint);
                         checkPoint = now;
@@ -51,6 +51,7 @@ namespace DioLive.Triangle.ServerCore
                     UpdateRequest request = requestPool.Take();
                     Dot dot = space.FindById(request.Id);
                     dot.MoveDirection = request.MoveDirection;
+                    dot.Velocity = Space.InitVelocity;
                     dot.Beaming = request.Beaming;
                 }
             });

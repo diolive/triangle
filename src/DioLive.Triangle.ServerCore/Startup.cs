@@ -80,9 +80,9 @@ namespace DioLive.Triangle.ServerCore
                 var space = app.ApplicationServices.GetRequiredService<Space>();
 
                 Dot dot = space.FindById(Guid.Parse(context.Request.Query["Id"].First()));
-                CurrentDot current = new CurrentDot(dot.State, dot.MoveDirection, dot.Beaming);
+                CurrentDot current = new CurrentDot((BindingModels.DotState)dot.State, dot.MoveDirection, dot.Beaming) { X = (int)dot.X, Y = (int)dot.Y };
                 NeighbourDot[] neighbours = space.GetNeighbours((int)dot.X, (int)dot.Y)
-                    .Select(d => new NeighbourDot(d.Team, (int)(d.X - dot.X), (int)(d.Y - dot.Y), d.State == DotState.Stunned, d.Beaming))
+                    .Select(d => new NeighbourDot(d.Team, (int)(d.X - dot.X), (int)(d.Y - dot.Y), d.State == DataStorage.DotState.Stunned, d.Beaming))
                     .ToArray();
                 RadarDot[] radar = space.GetRadar(dot.Team, (int)dot.X, (int)dot.Y)
                     .Select(d => new RadarDot(d.Team, (int)(d.X - dot.X), (int)(d.Y - dot.Y)))

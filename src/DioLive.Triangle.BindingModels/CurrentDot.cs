@@ -1,6 +1,4 @@
-﻿using DioLive.Triangle.DataStorage;
-
-namespace DioLive.Triangle.BindingModels
+﻿namespace DioLive.Triangle.BindingModels
 {
     public class CurrentDot
     {

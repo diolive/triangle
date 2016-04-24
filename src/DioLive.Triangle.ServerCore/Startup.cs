@@ -70,7 +70,7 @@ namespace DioLive.Triangle.ServerCore
 
                 Dot newDot = new Dot(1, 10, 20);
                 space.Add(newDot);
-                await context.Response.WriteJsonAsync(newDot.Id);
+                await context.Response.WriteJsonAsync(new CreateDotResponse(newDot.Id, newDot.Team));
             });
         }
 

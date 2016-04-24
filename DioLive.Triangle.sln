@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F879D81A-6DE
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{58BB673D-489C-44C1-9481-B7826BCC00B2}"
 	ProjectSection(SolutionItems) = preProject
+		src\DioLive.Triangle.ClientContent\Content.mgcb = src\DioLive.Triangle.ClientContent\Content.mgcb
 		global.json = global.json
 	EndProjectSection
 EndProject

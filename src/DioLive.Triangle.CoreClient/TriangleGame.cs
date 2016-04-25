@@ -97,6 +97,7 @@ namespace DioLive.Triangle.CoreClient
         protected override void UnloadContent()
         {
             // TODO: Unload any non ContentManager content here
+            client.Dispose();
         }
 
         /// <summary>
@@ -110,23 +111,26 @@ namespace DioLive.Triangle.CoreClient
                 Exit();
 
             // TODO: Add your update logic here
-            MouseState mouseState = Mouse.GetState();
-            if (windowBounds.Contains(mouseState.Position))
+            if (this.state == null || this.state.Current.State != DotState.Destroyed)
             {
-                var diff = mouseState.Position - this.center;
-                var angle = (float)Math.Atan2(diff.Y, diff.X);
+                MouseState mouseState = Mouse.GetState();
+                if (windowBounds.Contains(mouseState.Position))
+                {
+                    var diff = mouseState.Position - this.center;
+                    var angle = (float)Math.Atan2(diff.Y, diff.X);
 
-                if (mouseState.LeftButton == ButtonState.Pressed)
-                {
-                    client.Update(angle, angle);
+                    if (mouseState.LeftButton == ButtonState.Pressed)
+                    {
+                        client.Update(angle, angle);
+                    }
+                    else
+                    {
+                        client.Update(angle);
+                    }
                 }
-                else
-                {
-                    client.Update(angle);
-                }
+
+                this.state = client.GetState();
             }
-
-            this.state = client.GetState();
 
             base.Update(gameTime);
         }
@@ -142,20 +146,30 @@ namespace DioLive.Triangle.CoreClient
             // TODO: Add your drawing code here
             spriteBatch.Begin();
 
-            foreach (var dot in this.state.Neighbours)
+            if (this.state != null && this.state.Current.State != DotState.Destroyed)
             {
-                if (dot.Beaming.HasValue)
+                foreach (var dot in this.state.Neighbours)
                 {
-                    DrawBeam(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Beaming.Value);
+                    if (dot.Beaming.HasValue)
+                    {
+                        DrawBeam(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Beaming.Value);
+                    }
+                    DrawDot(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
                 }
-                DrawDot(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
-            }
 
-            foreach (var dot in this.state.Radar)
-            {
-                DrawRadarPoint(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
+                foreach (var dot in this.state.Radar)
+                {
+                    DrawRadarPoint(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
+                }
+
+#if DEBUG
+                this.Window.Title = $"{this.state.Current.X} : {this.state.Current.Y}";
+#endif
             }
-            this.Window.Title = $"{state.Current.X} : {state.Current.Y}";
+            else
+            {
+                Window.Title = "End";
+            }
 
             spriteBatch.End();
 
@@ -202,9 +216,9 @@ namespace DioLive.Triangle.CoreClient
 
                 case 3:
                     a = 255;
-                    r = Convert.ToByte(new string(hexColor[0],2), 16);
-                    g = Convert.ToByte(new string(hexColor[1],2), 16);
-                    b = Convert.ToByte(new string(hexColor[2],2), 16);
+                    r = Convert.ToByte(new string(hexColor[0], 2), 16);
+                    g = Convert.ToByte(new string(hexColor[1], 2), 16);
+                    b = Convert.ToByte(new string(hexColor[2], 2), 16);
                     break;
 
                 default:

@@ -10,28 +10,37 @@ namespace DioLive.Triangle.ServerClient
     {
         private HttpClient httpClient;
 
-        public Client(Uri serverUri)
+        public Client(Uri serverUri, bool initialize = true)
         {
             this.httpClient = new HttpClient
             {
                 BaseAddress = serverUri
             };
 
-            var task = InitializeAsync();
-            task.Wait();
-            var result = task.Result;
-
-            this.Id = result.Id;
-            this.Team = result.Team;
+            if (initialize)
+            {
+                Initialize();
+            }
         }
 
-        public Guid Id { get; }
+        public bool Initialized { get; private set; }
 
-        public byte Team { get; }
+        public Guid Id { get; private set; }
 
-        private async Task<CreateDotResponse> InitializeAsync()
+        public byte Team { get; private set; }
+
+        public void Initialize()
         {
-            //HttpRequestMessage message = new HttpRequestMessage(HttpMethod.Post, "create");
+            InitializeAsync().Wait();
+        }
+
+        public async Task InitializeAsync()
+        {
+            if (this.Initialized)
+            {
+                throw new InvalidOperationException("Client was already initialized before. Call .Signout() before");
+            }
+
             HttpResponseMessage response = await httpClient.PostAsync("create", null);
             if (!response.IsSuccessStatusCode)
             {
@@ -39,7 +48,11 @@ namespace DioLive.Triangle.ServerClient
             }
 
             string content = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<CreateDotResponse>(content);
+            CreateDotResponse createResponse = JsonConvert.DeserializeObject<CreateDotResponse>(content);
+
+            this.Id = createResponse.Id;
+            this.Team = createResponse.Team;
+            this.Initialized = true;
         }
 
         public StateResponse GetState()
@@ -51,19 +64,40 @@ namespace DioLive.Triangle.ServerClient
 
         public async Task<StateResponse> GetStateAsync()
         {
+            EnsureInitialized();
             string content = await httpClient.GetStringAsync($"state?id={this.Id}");
             return JsonConvert.DeserializeObject<StateResponse>(content);
         }
 
         public void Update(float angle, float? beaming = null)
         {
-            var task = UpdateAsync(angle, beaming);
-            task.Wait();
+            UpdateAsync(angle, beaming).Wait();
         }
 
         public async Task UpdateAsync(float angle, float? beaming = null)
         {
+            EnsureInitialized();
             await httpClient.PostAsJsonAsync("update", new UpdateRequest(this.Id, angle, beaming));
+        }
+
+        public void Signout()
+        {
+            SignoutAsync().Wait();
+        }
+
+        public async Task SignoutAsync()
+        {
+            EnsureInitialized();
+            await httpClient.PostAsJsonAsync("signout", new SignoutRequest(this.Id));
+            this.Initialized = false;
+        }
+
+        private void EnsureInitialized()
+        {
+            if (!Initialized)
+            {
+                throw new InvalidOperationException("Client was not initialized. Call .Initialize() before.");
+            }
         }
 
         #region IDisposable Support
@@ -76,6 +110,7 @@ namespace DioLive.Triangle.ServerClient
             {
                 if (disposing)
                 {
+                    Signout();
                     this.httpClient.Dispose();
                 }
 

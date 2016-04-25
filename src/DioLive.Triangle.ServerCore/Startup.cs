@@ -29,6 +29,7 @@ namespace DioLive.Triangle.ServerCore
             app.MapPost("/create", PostCreate);
             app.MapGet("/state", GetState);
             app.MapPost("/update", PostUpdate);
+            app.MapPost("/signout", PostSignout);
 
             Task.Run(() =>
             {
@@ -112,6 +113,16 @@ namespace DioLive.Triangle.ServerCore
                 var updateRequest = await context.Request.ReadJsonAsync<UpdateRequest>();
                 var requestPool = context.RequestServices.GetRequiredService<RequestPool>();
                 requestPool.Add(updateRequest);
+            });
+        }
+
+        private void PostSignout(IApplicationBuilder app)
+        {
+            app.Run(async (context) =>
+            {
+                var signoutRequest = await context.Request.ReadJsonAsync<SignoutRequest>();
+                var space = context.RequestServices.GetRequiredService<Space>();
+                space.RemoveById(signoutRequest.Id);
             });
         }
 

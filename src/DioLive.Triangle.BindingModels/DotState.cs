@@ -10,5 +10,8 @@
 
         // Two beams
         Stunned = 2,
+
+        // Destroyed or disconnected
+        Destroyed = 3,
     }
 }

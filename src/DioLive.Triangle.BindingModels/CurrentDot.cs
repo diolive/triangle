@@ -1,23 +1,23 @@
-﻿namespace DioLive.Triangle.BindingModels
+﻿using Newtonsoft.Json;
+
+namespace DioLive.Triangle.BindingModels
 {
     public class CurrentDot
     {
-        public CurrentDot(DotState state, float moveDirection, float? beaming)
-            : this(true, state, moveDirection, beaming)
+        static CurrentDot()
         {
+            Destroyed = new CurrentDot(DotState.Destroyed, default(float), default(float?));
         }
 
-        private CurrentDot(bool alive, DotState state, float moveDirection, float? beaming)
+        [JsonConstructor]
+        public CurrentDot(DotState state, float moveDirection, float? beaming)
         {
-            this.Alive = alive;
             this.State = state;
             this.MoveDirection = moveDirection;
             this.Beaming = beaming;
         }
 
-        public static CurrentDot Destroyed => new CurrentDot(false, default(DotState), default(float), default(float?));
-
-        public bool Alive { get; }
+        public static CurrentDot Destroyed { get; }
 
         public DotState State { get; }
 

@@ -17,6 +17,8 @@ namespace DioLive.Triangle.CoreClient
     {
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
+        private readonly int windowWidth;
+        private readonly int windowHeight;
 
         private Color background;
         private Color[] teamColors;
@@ -34,8 +36,14 @@ namespace DioLive.Triangle.CoreClient
 
         public TriangleGame()
         {
-            graphics = new GraphicsDeviceManager(this);
+            this.graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = Path.Combine(Environment.CurrentDirectory, "Content");
+
+            this.windowWidth = Constants.UI.NeighbourhoodSize + 2 * Constants.UI.DotRadius + Constants.UI.RadarSize;
+            this.windowHeight = Constants.UI.NeighbourhoodSize + 2 * Constants.UI.DotRadius;
+
+            graphics.PreferredBackBufferWidth = this.windowWidth;
+            graphics.PreferredBackBufferHeight = this.windowHeight;
 
             this.IsMouseVisible = true;
         }
@@ -50,10 +58,10 @@ namespace DioLive.Triangle.CoreClient
         {
             // TODO: Add your initialization logic here
             var viewport = GraphicsDevice.Viewport;
-            this.center = new Point(viewport.Width / 2, viewport.Height / 2);
-            this.radarCenter = new Point(viewport.Width - 50, 50);
-            this.windowBounds = new Rectangle(Point.Zero, GraphicsDevice.Viewport.Bounds.Size);
-            this.beamSize = new Point(200, 7);
+            this.center = new Point(Constants.UI.NeighbourhoodSize / 2, Constants.UI.NeighbourhoodSize / 2);
+            this.radarCenter = new Point(this.windowWidth - Constants.UI.RadarSize / 2, Constants.UI.RadarSize / 2);
+            this.windowBounds = new Rectangle(0, 0, this.windowWidth, this.windowHeight);
+            this.beamSize = new Point(Constants.UI.BeamLength, Constants.UI.BeamWidth);
 
             base.Initialize();
         }
@@ -178,7 +186,7 @@ namespace DioLive.Triangle.CoreClient
 
         private void DrawDot(SpriteBatch spriteBatch, int x, int y, int team)
         {
-            spriteBatch.Draw(dotTexture, new Rectangle(center.X + x - 25, center.Y + y - 25, 50, 50), teamColors[team]);
+            spriteBatch.Draw(dotTexture, new Rectangle(center.X + x - Constants.UI.DotRadius, center.Y + y - Constants.UI.DotRadius, 2 * Constants.UI.DotRadius, 2 * Constants.UI.DotRadius), teamColors[team]);
         }
 
         private void DrawBeam(SpriteBatch spriteBatch, int x, int y, float direction)
@@ -188,7 +196,7 @@ namespace DioLive.Triangle.CoreClient
 
         private void DrawRadarPoint(SpriteBatch spriteBatch, int x, int y, int team)
         {
-            spriteBatch.Draw(dotTexture, new Rectangle(radarCenter.X + x / 50 - 2, radarCenter.Y + y / 50 - 2, 4, 4), teamColors[team]);
+            spriteBatch.Draw(dotTexture, new Rectangle(radarCenter.X + x * Constants.UI.RadarSize / Constants.Space.RadarScope - Constants.UI.RadarDotRadius, radarCenter.Y + y * Constants.UI.RadarSize / Constants.Space.RadarScope - Constants.UI.RadarDotRadius, 2 * Constants.UI.RadarDotRadius, 2 * Constants.UI.RadarDotRadius), teamColors[team]);
         }
 
         private static Color ParseColor(string hexColor)

@@ -9,11 +9,9 @@ namespace DioLive.Triangle.DataStorage
     {
         public const float InitVelocity = 100f;
 
-        private const int NeighbourhoodWidth = 500;
-        private const int NeighbourhoodHeight = 500;
+        private const int NeighbourhoodSize = 500;
+        private const int RadarSize = 5000;
         private const int BeamLength = 250;
-        private const int RadarWidth = 5000;
-        private const int RadarHeight = 5000;
         private const int DotRadius = 25;
         private const float Deceleration = 10f;
 
@@ -45,13 +43,13 @@ namespace DioLive.Triangle.DataStorage
 
         public IEnumerable<Dot> GetNeighbours(int x, int y)
         {
-            var scope = new Rectangle(x, y, NeighbourhoodWidth, NeighbourhoodHeight);
+            var scope = new Rectangle(x, y, NeighbourhoodSize, NeighbourhoodSize);
             return this.dots.Where(dot => scope.Contains(dot.X, dot.Y));
         }
 
         public IEnumerable<Dot> GetRadar(byte team, int x, int y)
         {
-            var scope = new Rectangle(x, y, RadarWidth, RadarHeight);
+            var scope = new Rectangle(x, y, RadarSize, RadarSize);
             return this.dots.Where(dot => (dot.Team == team || dot.State != DotState.Free) && scope.Contains(dot.X, dot.Y));
         }
 

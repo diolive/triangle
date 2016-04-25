@@ -18,6 +18,7 @@ namespace DioLive.Triangle.ServerCore
         {
             services.AddSingleton<RequestPool>();
             services.AddSingleton<Space>();
+            services.AddSingleton<Random>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,8 +68,9 @@ namespace DioLive.Triangle.ServerCore
             app.Run(async (context) =>
             {
                 var space = app.ApplicationServices.GetRequiredService<Space>();
+                var random = app.ApplicationServices.GetRequiredService<Random>();
 
-                Dot newDot = new Dot(1, 10, 20);
+                Dot newDot = new Dot((byte)random.Next(0, 3), 0, 0);
                 space.Add(newDot);
                 await context.Response.WriteJsonAsync(new CreateDotResponse(newDot.Id, newDot.Team));
             });

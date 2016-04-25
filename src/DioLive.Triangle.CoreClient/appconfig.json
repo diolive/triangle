@@ -1,16 +1,17 @@
 ﻿{
   "colors": {
-    "background": "464547",
+    "background": "FF464547",
     "teams": [
-      "39C2D7",
-      "A3C644",
-      "FFFFFF",
-      "B22746",
-      "8E244D",
-      "1A9CB0",
-      "7F993A",
-      "CCCCCC"
-    ]
+      "FF39C2D7",
+      "FFA3C644",
+      "FFFFFFFF",
+      "FFB22746",
+      "FF8E244D",
+      "FF1A9CB0",
+      "FF7F993A",
+      "FFCCCCCC"
+    ],
+    "beam": "FFFFD700"
   },
   "serverUri": "localhost:5000"
 }

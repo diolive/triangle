@@ -13,7 +13,7 @@ namespace DioLive.Triangle.DataStorage
         private const int RadarSize = 5000;
         private const int BeamLength = 250;
         private const int DotRadius = 25;
-        private const float Deceleration = 10f;
+        private const float Deceleration = 50f;
 
         private readonly ICollection<Dot> dots;
 

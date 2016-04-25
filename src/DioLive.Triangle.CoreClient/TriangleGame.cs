@@ -21,6 +21,7 @@ namespace DioLive.Triangle.CoreClient
         private Color background;
         private Color[] teamColors;
         private Texture2D dotTexture;
+        private Texture2D beamTexture;
         private Point center;
         private Point radarCenter;
         private Rectangle windowBounds;
@@ -82,6 +83,7 @@ namespace DioLive.Triangle.CoreClient
             teamColors = configuration.Colors.Teams.Select(ParseColor).ToArray();
 
             dotTexture = Content.Load<Texture2D>("dot");
+            beamTexture = Content.Load<Texture2D>("rounded");
         }
 
         /// <summary>

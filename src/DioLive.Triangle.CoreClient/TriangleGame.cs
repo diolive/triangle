@@ -25,6 +25,8 @@ namespace DioLive.Triangle.CoreClient
         private Point center;
         private Point radarCenter;
         private Rectangle windowBounds;
+        private Point beamSize;
+        private Color beamColor;
 
         private Client client;
 
@@ -51,6 +53,7 @@ namespace DioLive.Triangle.CoreClient
             this.center = new Point(viewport.Width / 2, viewport.Height / 2);
             this.radarCenter = new Point(viewport.Width - 50, 50);
             this.windowBounds = new Rectangle(Point.Zero, GraphicsDevice.Viewport.Bounds.Size);
+            this.beamSize = new Point(200, 7);
 
             base.Initialize();
         }
@@ -81,6 +84,7 @@ namespace DioLive.Triangle.CoreClient
 
             background = ParseColor(configuration.Colors.Background);
             teamColors = configuration.Colors.Teams.Select(ParseColor).ToArray();
+            beamColor = ParseColor(configuration.Colors.Beam);
 
             dotTexture = Content.Load<Texture2D>("dot");
             beamTexture = Content.Load<Texture2D>("rounded");
@@ -106,12 +110,20 @@ namespace DioLive.Triangle.CoreClient
                 Exit();
 
             // TODO: Add your update logic here
-            var position = Mouse.GetState().Position;
-            if (windowBounds.Contains(position))
+            MouseState mouseState = Mouse.GetState();
+            if (windowBounds.Contains(mouseState.Position))
             {
-                var diff = position - this.center;
+                var diff = mouseState.Position - this.center;
                 var angle = (float)Math.Atan2(diff.Y, diff.X);
-                client.Update(angle);
+
+                if (mouseState.LeftButton == ButtonState.Pressed)
+                {
+                    client.Update(angle, angle);
+                }
+                else
+                {
+                    client.Update(angle);
+                }
             }
 
             this.state = client.GetState();
@@ -132,6 +144,10 @@ namespace DioLive.Triangle.CoreClient
 
             foreach (var dot in this.state.Neighbours)
             {
+                if (dot.Beaming.HasValue)
+                {
+                    DrawBeam(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Beaming.Value);
+                }
                 DrawDot(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
             }
 
@@ -149,6 +165,11 @@ namespace DioLive.Triangle.CoreClient
         private void DrawDot(SpriteBatch spriteBatch, int x, int y, int team)
         {
             spriteBatch.Draw(dotTexture, new Rectangle(center.X + x - 25, center.Y + y - 25, 50, 50), teamColors[team]);
+        }
+
+        private void DrawBeam(SpriteBatch spriteBatch, int x, int y, float direction)
+        {
+            spriteBatch.Draw(beamTexture, new Rectangle(center.X + x, center.Y + y, beamSize.X, beamSize.Y), null, this.beamColor, direction, new Vector2(0, beamTexture.Height / 2), SpriteEffects.None, 0f);
         }
 
         private void DrawRadarPoint(SpriteBatch spriteBatch, int x, int y, int team)

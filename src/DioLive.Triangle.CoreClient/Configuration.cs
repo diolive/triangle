@@ -12,5 +12,7 @@
         public string Background { get; set; }
 
         public string[] Teams { get; set; }
+
+        public string Beam { get; set; }
     }
 }

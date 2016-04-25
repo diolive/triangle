@@ -55,15 +55,15 @@ namespace DioLive.Triangle.ServerClient
             return JsonConvert.DeserializeObject<StateResponse>(content);
         }
 
-        public void Update(float angle)
+        public void Update(float angle, float? beaming = null)
         {
-            var task = UpdateAsync(angle);
+            var task = UpdateAsync(angle, beaming);
             task.Wait();
         }
 
-        public async Task UpdateAsync(float angle)
+        public async Task UpdateAsync(float angle, float? beaming = null)
         {
-            await httpClient.PostAsJsonAsync("update", new UpdateRequest(this.Id, angle));
+            await httpClient.PostAsJsonAsync("update", new UpdateRequest(this.Id, angle, beaming));
         }
 
         #region IDisposable Support

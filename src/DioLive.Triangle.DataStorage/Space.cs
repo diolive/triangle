@@ -93,6 +93,8 @@ namespace DioLive.Triangle.DataStorage
                 {
                     dot.State = (DotState)beamCount;
                 }
+
+                dot.Beaming = null;
             }
 
             foreach (var dot in destroyedDots)

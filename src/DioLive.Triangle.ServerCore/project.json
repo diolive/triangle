@@ -1,5 +1,7 @@
 {
   "version": "1.0.0-*",
+  "description": "DioLive.Triangle.ServerCore web application",
+  "authors": [ "DioLive Studio" ],
   "compilationOptions": {
     "emitEntryPoint": true
   },

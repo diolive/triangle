@@ -9,6 +9,8 @@ namespace DioLive.Triangle.BindingModels
             Destroyed = new StateResponse(CurrentDot.Destroyed, null, null);
         }
 
+        public static StateResponse Destroyed { get; }
+
         [JsonConstructor]
         public StateResponse(CurrentDot current, NeighbourDot[] neighbours, RadarDot[] radar)
         {
@@ -16,8 +18,6 @@ namespace DioLive.Triangle.BindingModels
             this.Neighbours = neighbours;
             this.Radar = radar;
         }
-
-        public static StateResponse Destroyed { get; }
 
         public CurrentDot Current { get; }
 

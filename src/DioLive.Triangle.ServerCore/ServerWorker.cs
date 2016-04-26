@@ -83,11 +83,12 @@ namespace DioLive.Triangle.ServerCore
                 return;
             }
 
-            CurrentDot current = new CurrentDot((BindingModels.DotState)dot.State, dot.MoveDirection, dot.Beaming)
+            CurrentDot current = new CurrentDot((BindingModels.DotState)dot.State, dot.MoveDirection, dot.Beaming);
 #if DEBUG
-            { X = dot.X, Y = dot.Y }
+            current.X = dot.X;
+            current.Y = dot.Y;
 #endif
-                ;
+
             NeighbourDot[] neighbours = space.GetNeighbours((int)dot.X, (int)dot.Y)
                 .Select(d => new NeighbourDot(d.Team, (int)(d.X - dot.X), (int)(d.Y - dot.Y), d.State == DataStorage.DotState.Stunned, d.Beaming))
                 .ToArray();

@@ -7,6 +7,7 @@
   },
 
   "dependencies": {
+    "DioLive.Common.Extensions": "1.0.0-*",
     "DioLive.Triangle.BindingModels": "1.0.0-*",
     "DioLive.Triangle.DataStorage": "1.0.0-*",
     "Microsoft.AspNet.IISPlatformHandler": "1.0.0-rc1-final",

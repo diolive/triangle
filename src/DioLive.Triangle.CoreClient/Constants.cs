@@ -1,4 +1,6 @@
-﻿namespace DioLive.Triangle.CoreClient
+﻿using System;
+
+namespace DioLive.Triangle.CoreClient
 {
     public static class Constants
     {
@@ -15,6 +17,11 @@
         public static class Space
         {
             public const int RadarScope = 5000;
+        }
+
+        public static class Engine
+        {
+            public static TimeSpan UpdateInterval { get; } = TimeSpan.FromMilliseconds(50);
         }
     }
 }

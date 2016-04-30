@@ -35,7 +35,8 @@ namespace DioLive.Triangle.CoreClient
 
         private StateResponse state;
 
-        private GameTimer updateTimer;
+        private GameTimer sendUpdateTimer;
+        private GameTimer getStateTimer;
 
         public TriangleGame()
         {
@@ -66,7 +67,8 @@ namespace DioLive.Triangle.CoreClient
             this.windowBounds = new Rectangle(0, 0, this.windowWidth, this.windowHeight);
             this.beamSize = new Point(Constants.UI.BeamLength, Constants.UI.BeamWidth);
 
-            this.updateTimer = new GameTimer(Constants.Engine.UpdateInterval);
+            this.sendUpdateTimer = new GameTimer(Constants.Timers.SendUpdateInterval);
+            this.getStateTimer = new GameTimer(Constants.Timers.GetStateInterval);
 
             base.Initialize();
         }
@@ -128,8 +130,8 @@ namespace DioLive.Triangle.CoreClient
                 return;
             }
 
-            this.updateTimer += gameTime.ElapsedGameTime;
-            if (this.updateTimer.CheckElapsed())
+            this.sendUpdateTimer += gameTime.ElapsedGameTime;
+            if (this.sendUpdateTimer.CheckElapsed())
             {
                 MouseState mouseState = Mouse.GetState();
                 if (windowBounds.Contains(mouseState.Position))
@@ -140,16 +142,22 @@ namespace DioLive.Triangle.CoreClient
                     if (mouseState.LeftButton == ButtonState.Pressed)
                     {
                         client.UpdateAsync(angle, angle).Forget();
+                        //client.Update(angle, angle);
                     }
                     else
                     {
                         client.UpdateAsync(angle).Forget();
+                        //client.Update(angle);
                     }
                 }
-                client.GetStateAsync(state => { this.state = state; }).Forget();
-           // this.state = client.GetState();
             }
 
+            this.getStateTimer += gameTime.ElapsedGameTime;
+            if (this.getStateTimer.CheckElapsed())
+            {
+                client.GetStateAsync(state => { this.state = state; }).Forget();
+                //this.state = client.GetState();
+            }
 
             base.Update(gameTime);
         }

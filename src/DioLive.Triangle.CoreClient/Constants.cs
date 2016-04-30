@@ -19,9 +19,11 @@ namespace DioLive.Triangle.CoreClient
             public const int RadarScope = 5000;
         }
 
-        public static class Engine
+        public static class Timers
         {
-            public static TimeSpan UpdateInterval { get; } = TimeSpan.FromMilliseconds(50);
+            public static TimeSpan SendUpdateInterval { get; } = TimeSpan.FromMilliseconds(50);
+
+            public static TimeSpan GetStateInterval { get; } = TimeSpan.FromMilliseconds(200);
         }
     }
 }

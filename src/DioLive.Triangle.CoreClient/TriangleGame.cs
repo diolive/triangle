@@ -123,14 +123,14 @@ namespace DioLive.Triangle.CoreClient
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            if (this.state != null && this.state.Current.State == DotState.Destroyed)
+            {
+                return;
+            }
+
             this.updateTimer += gameTime.ElapsedGameTime;
             if (this.updateTimer.CheckElapsed())
             {
-                if (this.state != null && this.state.Current.State == DotState.Destroyed)
-                {
-                    return;
-                }
-
                 MouseState mouseState = Mouse.GetState();
                 if (windowBounds.Contains(mouseState.Position))
                 {

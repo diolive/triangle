@@ -69,6 +69,12 @@ namespace DioLive.Triangle.ServerClient
             return JsonConvert.DeserializeObject<StateResponse>(content);
         }
 
+        public async Task GetStateAsync(Action<StateResponse> action)
+        {
+            var state = await GetStateAsync();
+            action(state);
+        }
+
         public void Update(float angle, float? beaming = null)
         {
             UpdateAsync(angle, beaming).Wait();

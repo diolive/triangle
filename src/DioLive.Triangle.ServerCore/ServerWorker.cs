@@ -66,6 +66,12 @@ namespace DioLive.Triangle.ServerCore
             }, this.cancellationToken);
         }
 
+        public async Task GetAdmin(HttpContext context)
+        {
+            var dots = this.space.GetAllDots().ToArray();
+            await context.Response.WriteJsonAsync(dots);
+        }
+
         public async Task PostCreate(HttpContext context)
         {
             Dot newDot = new Dot((byte)this.random.Next(0, 3), 0, 0);
@@ -89,7 +95,7 @@ namespace DioLive.Triangle.ServerCore
             current.Y = dot.Y;
 #endif
 
-            NeighbourDot[] neighbours = space.GetNeighbours((int)dot.X, (int)dot.Y)
+            NeighbourDot[] neighbours = space.GetNeighbours(dot)
                 .Select(d => new NeighbourDot(d.Team, (int)(d.X - dot.X), (int)(d.Y - dot.Y), d.State == DataStorage.DotState.Stunned, d.Beaming))
                 .ToArray();
             RadarDot[] radar = space.GetRadar(dot.Team, (int)dot.X, (int)dot.Y)

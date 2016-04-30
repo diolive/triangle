@@ -29,6 +29,7 @@ namespace DioLive.Triangle.ServerCore
 
             ServerWorker serverWorker = app.ApplicationServices.GetRequiredService<ServerWorker>();
 
+            app.MapGet("/admin", cfg => cfg.Run(serverWorker.GetAdmin));
             app.MapPost("/create", cfg => cfg.Run(serverWorker.PostCreate));
             app.MapGet("/state", cfg => cfg.Run(serverWorker.GetState));
             app.MapPost("/update", cfg => cfg.Run(serverWorker.PostUpdate));

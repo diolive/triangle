@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.ServerClient;
 using Microsoft.Xna.Framework;
@@ -34,6 +35,8 @@ namespace DioLive.Triangle.CoreClient
 
         private StateResponse state;
 
+        private GameTimer updateTimer;
+
         public TriangleGame()
         {
             this.graphics = new GraphicsDeviceManager(this);
@@ -62,6 +65,8 @@ namespace DioLive.Triangle.CoreClient
             this.radarCenter = new Point(this.windowWidth - Constants.UI.RadarSize / 2, Constants.UI.RadarSize / 2);
             this.windowBounds = new Rectangle(0, 0, this.windowWidth, this.windowHeight);
             this.beamSize = new Point(Constants.UI.BeamLength, Constants.UI.BeamWidth);
+
+            this.updateTimer = new GameTimer(Constants.Engine.UpdateInterval);
 
             base.Initialize();
         }
@@ -118,9 +123,14 @@ namespace DioLive.Triangle.CoreClient
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
-            if (this.state == null || this.state.Current.State != DotState.Destroyed)
+            this.updateTimer += gameTime.ElapsedGameTime;
+            if (this.updateTimer.CheckElapsed())
             {
+                if (this.state != null && this.state.Current.State == DotState.Destroyed)
+                {
+                    return;
+                }
+
                 MouseState mouseState = Mouse.GetState();
                 if (windowBounds.Contains(mouseState.Position))
                 {
@@ -129,16 +139,17 @@ namespace DioLive.Triangle.CoreClient
 
                     if (mouseState.LeftButton == ButtonState.Pressed)
                     {
-                        client.Update(angle, angle);
+                        client.UpdateAsync(angle, angle).Forget();
                     }
                     else
                     {
-                        client.Update(angle);
+                        client.UpdateAsync(angle).Forget();
                     }
                 }
-
-                this.state = client.GetState();
+                client.GetStateAsync(state => { this.state = state; }).Forget();
+           // this.state = client.GetState();
             }
+
 
             base.Update(gameTime);
         }
@@ -154,31 +165,33 @@ namespace DioLive.Triangle.CoreClient
             // TODO: Add your drawing code here
             spriteBatch.Begin();
 
-            if (this.state != null && this.state.Current.State != DotState.Destroyed)
+            if (this.state != null)
             {
-                foreach (var dot in this.state.Neighbours)
+                if (this.state.Current.State != DotState.Destroyed)
                 {
-                    if (dot.Beaming.HasValue)
+                    foreach (var dot in this.state.Neighbours)
                     {
-                        DrawBeam(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Beaming.Value);
+                        if (dot.Beaming.HasValue)
+                        {
+                            DrawBeam(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Beaming.Value);
+                        }
+                        DrawDot(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
                     }
-                    DrawDot(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
-                }
 
-                foreach (var dot in this.state.Radar)
-                {
-                    DrawRadarPoint(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
-                }
+                    foreach (var dot in this.state.Radar)
+                    {
+                        DrawRadarPoint(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
+                    }
 
 #if DEBUG
-                this.Window.Title = $"{this.state.Current.X} : {this.state.Current.Y}";
+                    this.Window.Title = $"{this.state.Current.X} : {this.state.Current.Y}";
 #endif
+                }
+                else
+                {
+                    Window.Title = "End";
+                }
             }
-            else
-            {
-                Window.Title = "End";
-            }
-
             spriteBatch.End();
 
             base.Draw(gameTime);

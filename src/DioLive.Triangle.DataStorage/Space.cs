@@ -17,9 +17,12 @@ namespace DioLive.Triangle.DataStorage
 
         private readonly ICollection<Dot> dots;
 
+        private readonly Dictionary<Guid, Dot[]> cachedNeighbours;
+
         public Space()
         {
             this.dots = new HashSet<Dot>();
+            this.cachedNeighbours = new Dictionary<Guid, Dot[]>();
         }
 
         public void Add(Dot dot)
@@ -39,6 +42,16 @@ namespace DioLive.Triangle.DataStorage
             {
                 dots.Remove(dot);
             }
+        }
+
+        public Dot[] GetNeighbours(Dot dot)
+        {
+            if (!this.cachedNeighbours.ContainsKey(dot.Id))
+            {
+                this.cachedNeighbours[dot.Id] = GetNeighbours((int)dot.X, (int)dot.Y).ToArray();
+            }
+
+            return this.cachedNeighbours[dot.Id];
         }
 
         public IEnumerable<Dot> GetNeighbours(int x, int y)
@@ -93,14 +106,22 @@ namespace DioLive.Triangle.DataStorage
                 {
                     dot.State = (DotState)beamCount;
                 }
-
-                dot.Beaming = null;
             }
 
             foreach (var dot in destroyedDots)
             {
                 this.dots.Remove(dot);
             }
+
+            foreach (var dot in this.dots)
+            {
+                this.cachedNeighbours[dot.Id] = GetNeighbours((int)dot.X, (int)dot.Y).ToArray();
+            }
+        }
+
+        public IEnumerable<Dot> GetAllDots()
+        {
+            return this.dots.ToList();
         }
     }
 }

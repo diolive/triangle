@@ -7,9 +7,16 @@ namespace Microsoft.AspNet.Http
 {
     public static class HttpRequestExtensions
     {
+        private static readonly Encoding defaultEncoding;
+
+        static HttpRequestExtensions()
+        {
+            defaultEncoding = Encoding.ASCII;
+        }
+
         public static async Task<string> ReadStringAsync(this HttpRequest request, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return await ReadStringAsync(request, Encoding.ASCII, cancellationToken);
+            return await ReadStringAsync(request, defaultEncoding, cancellationToken);
         }
 
         public static async Task<string> ReadStringAsync(this HttpRequest request, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))

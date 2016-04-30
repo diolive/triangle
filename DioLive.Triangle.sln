@@ -23,6 +23,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DioLive.Triangle.CoreClient
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DioLive.Triangle.Geometry", "src\DioLive.Triangle.Geometry\DioLive.Triangle.Geometry.xproj", "{07D71366-69DA-4347-AFC0-73C79C4D9731}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "DioLive.Common.Extensions", "src\DioLive.Common.Extensions\DioLive.Common.Extensions.xproj", "{6F248E8F-15E2-477C-B4A4-5DA0E13AA779}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,14 @@ Global
 		{07D71366-69DA-4347-AFC0-73C79C4D9731}.Release|Any CPU.Build.0 = Release|Any CPU
 		{07D71366-69DA-4347-AFC0-73C79C4D9731}.Release|x86.ActiveCfg = Release|Any CPU
 		{07D71366-69DA-4347-AFC0-73C79C4D9731}.Release|x86.Build.0 = Release|Any CPU
+		{6F248E8F-15E2-477C-B4A4-5DA0E13AA779}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F248E8F-15E2-477C-B4A4-5DA0E13AA779}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F248E8F-15E2-477C-B4A4-5DA0E13AA779}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6F248E8F-15E2-477C-B4A4-5DA0E13AA779}.Debug|x86.Build.0 = Debug|Any CPU
+		{6F248E8F-15E2-477C-B4A4-5DA0E13AA779}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F248E8F-15E2-477C-B4A4-5DA0E13AA779}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F248E8F-15E2-477C-B4A4-5DA0E13AA779}.Release|x86.ActiveCfg = Release|Any CPU
+		{6F248E8F-15E2-477C-B4A4-5DA0E13AA779}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,5 +100,6 @@ Global
 		{FFE01B7A-14A8-44CD-847B-AD46B1465E5D} = {F879D81A-6DE8-4CFE-84FF-B3DD450C3F89}
 		{E68F0C6B-43F8-499D-98FA-A7C14B9D4F91} = {F879D81A-6DE8-4CFE-84FF-B3DD450C3F89}
 		{07D71366-69DA-4347-AFC0-73C79C4D9731} = {F879D81A-6DE8-4CFE-84FF-B3DD450C3F89}
+		{6F248E8F-15E2-477C-B4A4-5DA0E13AA779} = {F879D81A-6DE8-4CFE-84FF-B3DD450C3F89}
 	EndGlobalSection
 EndGlobal

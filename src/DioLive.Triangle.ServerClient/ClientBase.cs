@@ -1,28 +1,11 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using DioLive.Triangle.BindingModels;
-using Newtonsoft.Json;
 
 namespace DioLive.Triangle.ServerClient
 {
-    public class Client : IDisposable
+    public abstract class ClientBase : IDisposable
     {
-        private HttpClient httpClient;
-
-        public Client(Uri serverUri, bool initialize = true)
-        {
-            this.httpClient = new HttpClient
-            {
-                BaseAddress = serverUri
-            };
-
-            if (initialize)
-            {
-                Initialize();
-            }
-        }
-
         public bool Initialized { get; private set; }
 
         public Guid Id { get; private set; }
@@ -41,14 +24,7 @@ namespace DioLive.Triangle.ServerClient
                 throw new InvalidOperationException("Client was already initialized before. Call .Signout() before");
             }
 
-            HttpResponseMessage response = await httpClient.PostAsync("create", null);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new InvalidOperationException("Request error on InitializeAsync");
-            }
-
-            string content = await response.Content.ReadAsStringAsync();
-            CreateDotResponse createResponse = JsonConvert.DeserializeObject<CreateDotResponse>(content);
+            CreateDotResponse createResponse = await InitializeProtectedAsync();
 
             this.Id = createResponse.Id;
             this.Team = createResponse.Team;
@@ -65,8 +41,7 @@ namespace DioLive.Triangle.ServerClient
         public async Task<StateResponse> GetStateAsync()
         {
             EnsureInitialized();
-            string content = await httpClient.GetStringAsync($"state?id={this.Id}");
-            return JsonConvert.DeserializeObject<StateResponse>(content);
+            return await GetStateProtectedAsync();
         }
 
         public async Task GetStateAsync(Action<StateResponse> action)
@@ -83,7 +58,7 @@ namespace DioLive.Triangle.ServerClient
         public async Task UpdateAsync(float angle, float? beaming = null)
         {
             EnsureInitialized();
-            await httpClient.PostAsJsonAsync("update", new UpdateRequest(this.Id, angle, beaming));
+            await UpdateProtectedAsync(angle, beaming);
         }
 
         public void Signout()
@@ -94,9 +69,21 @@ namespace DioLive.Triangle.ServerClient
         public async Task SignoutAsync()
         {
             EnsureInitialized();
-            await httpClient.PostAsJsonAsync("signout", new SignoutRequest(this.Id));
+            await SignoutProtectedAsync();
             this.Initialized = false;
         }
+
+        #region protected abstract methods
+
+        protected abstract Task<CreateDotResponse> InitializeProtectedAsync();
+
+        protected abstract Task<StateResponse> GetStateProtectedAsync();
+
+        protected abstract Task UpdateProtectedAsync(float angle, float? beaming);
+
+        protected abstract Task SignoutProtectedAsync();
+
+        #endregion protected abstract methods
 
         private void EnsureInitialized()
         {
@@ -106,29 +93,27 @@ namespace DioLive.Triangle.ServerClient
             }
         }
 
-        #region IDisposable Support
+        #region IDisposable implementation
 
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    Signout();
-                    this.httpClient.Dispose();
-                }
-
-                disposedValue = true;
-            }
-        }
+        private bool disposed = false; // To detect redundant calls
 
         public void Dispose()
         {
-            Dispose(true);
+            if (disposed)
+            {
+                return;
+            }
+
+            DisposeProtected();
+
+            disposed = true;
         }
 
-        #endregion IDisposable Support
+        protected virtual void DisposeProtected()
+        {
+            Signout();
+        }
+
+        #endregion IDisposable implementation
     }
 }

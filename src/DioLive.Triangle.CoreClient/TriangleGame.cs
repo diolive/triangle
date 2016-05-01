@@ -31,7 +31,7 @@ namespace DioLive.Triangle.CoreClient
         private Point beamSize;
         private Color beamColor;
 
-        private Client client;
+        private ClientBase client;
 
         private StateResponse state;
 
@@ -95,7 +95,7 @@ namespace DioLive.Triangle.CoreClient
                 serverUri = "http://" + serverUri;
             }
 
-            this.client = new Client(new Uri(serverUri));
+            this.client = new JsonClient(new Uri(serverUri));
 
             background = ParseColor(configuration.Colors.Background);
             teamColors = configuration.Colors.Teams.Select(ParseColor).ToArray();
@@ -112,7 +112,6 @@ namespace DioLive.Triangle.CoreClient
         protected override void UnloadContent()
         {
             // TODO: Unload any non ContentManager content here
-            client.Dispose();
         }
 
         /// <summary>
@@ -255,6 +254,15 @@ namespace DioLive.Triangle.CoreClient
             }
 
             return new Color(r, g, b, a);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing)
+            {
+                this.client.Dispose();
+            }
         }
     }
 }

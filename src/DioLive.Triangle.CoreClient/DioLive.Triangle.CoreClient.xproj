@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <DnxInvisibleContent Include="Content\dot.png" />
+    <DnxInvisibleContent Include="StyleCop.Cache" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\DNX\Microsoft.DNX.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

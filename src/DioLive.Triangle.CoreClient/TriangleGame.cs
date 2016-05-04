@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using DioLive.Common.Helpers;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.ServerClient;
@@ -27,15 +26,19 @@ namespace DioLive.Triangle.CoreClient
         private Color[] teamColors;
         private Texture2D dotTexture;
         private Texture2D beamTexture;
-        private Point center;
-        private Point radarCenter;
+        private Rectangle neighbourhoodRect;
+        private Rectangle radarRect;
         private Rectangle windowBounds;
-        private Point beamSize;
+        private Vector2 dotSize;
+        private Vector2 beamSize;
+        private Vector2 radarDotSize;
         private Color beamColor;
 
-        private ClientBase client;
+        private ServerClientBase client;
 
-        private StateResponse state;
+        private CurrentResponse current;
+        private NeighboursResponse neighbours;
+        private RadarResponse radar;
 
         private GameTimer sendUpdateTimer;
         private GameTimer getStateTimer;
@@ -45,8 +48,8 @@ namespace DioLive.Triangle.CoreClient
             this.graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = Path.Combine(Environment.CurrentDirectory, "Content");
 
-            this.windowWidth = Constants.UI.NeighbourhoodSize + 2 * Constants.UI.DotRadius + Constants.UI.RadarSize;
-            this.windowHeight = Constants.UI.NeighbourhoodSize + 2 * Constants.UI.DotRadius;
+            this.windowWidth = Constants.UI.NeighbourhoodSize + (2 * (int)((float)Constants.UI.DotRadius * Constants.UI.NeighbourhoodSize / Constants.Space.Scope)) + Constants.UI.RadarSize;
+            this.windowHeight = Constants.UI.NeighbourhoodSize + (2 * (int)((float)Constants.UI.DotRadius * Constants.UI.NeighbourhoodSize / Constants.Space.Scope));
 
             graphics.PreferredBackBufferWidth = this.windowWidth;
             graphics.PreferredBackBufferHeight = this.windowHeight;
@@ -64,10 +67,12 @@ namespace DioLive.Triangle.CoreClient
         {
             // TODO: Add your initialization logic here
             var viewport = GraphicsDevice.Viewport;
-            this.center = new Point(Constants.UI.NeighbourhoodSize / 2, Constants.UI.NeighbourhoodSize / 2);
-            this.radarCenter = new Point(this.windowWidth - Constants.UI.RadarSize / 2, Constants.UI.RadarSize / 2);
+            this.neighbourhoodRect = new Rectangle(0, 0, Constants.UI.NeighbourhoodSize, Constants.UI.NeighbourhoodSize);
+            this.radarRect = new Rectangle(Constants.UI.NeighbourhoodSize, 0, Constants.UI.RadarSize, Constants.UI.RadarSize);
             this.windowBounds = new Rectangle(0, 0, this.windowWidth, this.windowHeight);
-            this.beamSize = new Point(Constants.UI.BeamLength, Constants.UI.BeamWidth);
+            this.dotSize = new Vector2(Constants.UI.DotRadius * 2) * Constants.UI.NeighbourhoodSize / Constants.Space.Scope;
+            this.beamSize = new Vector2(Constants.UI.BeamLength, Constants.UI.BeamWidth) * Constants.UI.NeighbourhoodSize / Constants.Space.Scope;
+            this.radarDotSize = new Vector2(Constants.UI.RadarDotRadius);
 
             this.sendUpdateTimer = new GameTimer(Constants.Timers.SendUpdateInterval);
             this.getStateTimer = new GameTimer(Constants.Timers.GetStateInterval);
@@ -98,11 +103,8 @@ namespace DioLive.Triangle.CoreClient
                 serverUri = "http://" + serverUri;
             }
 
-            this.client = new JsonClient(new Uri(serverUri));
+            this.client = new JsonServerClient(new Uri(serverUri));
 
-            background = ParseColor(configuration.Colors.Background);
-            teamColors = configuration.Colors.Teams.Select(ParseColor).ToArray();
-            beamColor = ParseColor(configuration.Colors.Beam);
             background = XnaHelpers.ParseColor(configuration.Colors.Background);
             teamColors = configuration.Colors.Teams.Select(XnaHelpers.ParseColor).ToArray();
             beamColor = XnaHelpers.ParseColor(configuration.Colors.Beam);
@@ -132,7 +134,7 @@ namespace DioLive.Triangle.CoreClient
                 Exit();
             }
 
-            if (this.state != null && this.state.Current.State == DotState.Destroyed)
+            if (this.current != null && !this.current.State.HasFlag(DotState.Alive))
             {
                 return;
             }
@@ -143,18 +145,17 @@ namespace DioLive.Triangle.CoreClient
                 MouseState mouseState = Mouse.GetState();
                 if (windowBounds.Contains(mouseState.Position))
                 {
-                    var diff = mouseState.Position - this.center;
-                    var angle = (float)Math.Atan2(diff.Y, diff.X);
+                    Point diff = mouseState.Position - this.neighbourhoodRect.Center;
+                    double angle = Math.Atan2(diff.Y, diff.X);
+                    byte direction = AngleHelper.RadiansToDirection(angle);
 
                     if (mouseState.LeftButton == ButtonState.Pressed)
                     {
-                        client.UpdateAsync(angle, angle).Forget();
-                        //client.Update(angle, angle);
+                        client.Update(direction, direction);
                     }
                     else
                     {
-                        client.UpdateAsync(angle).Forget();
-                        //client.Update(angle);
+                        client.Update(direction);
                     }
                 }
             }
@@ -162,8 +163,9 @@ namespace DioLive.Triangle.CoreClient
             this.getStateTimer += gameTime.ElapsedGameTime;
             if (this.getStateTimer.CheckElapsed())
             {
-                client.GetStateAsync(state => { this.state = state; }).Forget();
-                //this.state = client.GetState();
+                this.current = client.GetCurrent();
+                this.neighbours = client.GetNeighbours();
+                this.radar = client.GetRadar();
             }
 
             base.Update(gameTime);
@@ -177,58 +179,76 @@ namespace DioLive.Triangle.CoreClient
         {
             GraphicsDevice.Clear(background);
 
-            // TODO: Add your drawing code here
+            if (this.current == null)
+            {
+                return;
+            }
+
             spriteBatch.Begin();
 
-            if (this.state != null)
+            if (this.current.State.HasFlag(DotState.Alive))
             {
-                if (this.state.Current.State != DotState.Destroyed)
+                if (this.neighbours != null)
                 {
-                    foreach (var dot in this.state.Neighbours)
+                    foreach (var dot in this.neighbours.Neighbours)
                     {
-                        if (dot.Beaming.HasValue)
+                        if (dot.State.HasFlag(DotState.Beaming))
                         {
-                            DrawBeam(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Beaming.Value);
+                            DrawBeam(spriteBatch, dot.RX, dot.RY, dot.BeamDirection);
                         }
-                        DrawDot(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
-                    }
 
-                    foreach (var dot in this.state.Radar)
-                    {
-                        DrawRadarPoint(spriteBatch, dot.OffsetX, dot.OffsetY, dot.Team);
+                        DrawDot(spriteBatch, dot);
                     }
-
-#if DEBUG
-                    this.Window.Title = $"{this.state.Current.X} : {this.state.Current.Y}";
-#endif
                 }
-                else
+
+                if (this.radar != null)
                 {
-                    Window.Title = "End";
+                    foreach (var dot in this.radar.RadarDots)
+                    {
+                        DrawRadarPoint(spriteBatch, dot.RX, dot.RY, dot.Team);
+                    }
                 }
             }
+            else
+            {
+                Window.Title = "End";
+            }
+
             spriteBatch.End();
 
             base.Draw(gameTime);
         }
 
-        private void DrawDot(SpriteBatch spriteBatch, int x, int y, int team)
+        private void DrawDot(SpriteBatch spriteBatch, NeighbourDot dot)
         {
-            spriteBatch.Draw(dotTexture, new Rectangle(center.X + x - Constants.UI.DotRadius, center.Y + y - Constants.UI.DotRadius, 2 * Constants.UI.DotRadius, 2 * Constants.UI.DotRadius), teamColors[team]);
+            Vector2 dotCenter = ToNeighbourhoodVector(dot.RX, dot.RY);
+            Rectangle dotRect = new Rectangle((dotCenter - (dotSize / 2)).ToPoint(), dotSize.ToPoint());
+            spriteBatch.Draw(dotTexture, dotRect, teamColors[dot.Team]);
         }
 
-        private void DrawBeam(SpriteBatch spriteBatch, int x, int y, float direction)
+        private void DrawBeam(SpriteBatch spriteBatch, ushort rx, ushort ry, byte direction)
         {
-            spriteBatch.Draw(beamTexture, new Rectangle(center.X + x, center.Y + y, beamSize.X, beamSize.Y), null, this.beamColor, direction, new Vector2(0, beamTexture.Height / 2), SpriteEffects.None, 0f);
+            Vector2 beamStart = ToNeighbourhoodVector(rx, ry);
+            spriteBatch.Draw(this.beamTexture, new Rectangle(beamStart.ToPoint(), this.beamSize.ToPoint()), null, this.beamColor, (float)AngleHelper.DirectionToRadians(direction), new Vector2(0, this.beamTexture.Height / 2), SpriteEffects.None, 0f);
         }
 
-        private void DrawRadarPoint(SpriteBatch spriteBatch, int x, int y, int team)
+        private void DrawRadarPoint(SpriteBatch spriteBatch, byte rx, byte ry, int team)
         {
-            spriteBatch.Draw(dotTexture, new Rectangle(radarCenter.X + x * Constants.UI.RadarSize / Constants.Space.RadarScope - Constants.UI.RadarDotRadius, radarCenter.Y + y * Constants.UI.RadarSize / Constants.Space.RadarScope - Constants.UI.RadarDotRadius, 2 * Constants.UI.RadarDotRadius, 2 * Constants.UI.RadarDotRadius), teamColors[team]);
+            Vector2 dotCenter = ToRadarVector(rx, ry);
+            Rectangle dotRect = new Rectangle((dotCenter - (radarDotSize / 2)).ToPoint(), radarDotSize.ToPoint());
+            spriteBatch.Draw(dotTexture, dotRect, teamColors[team]);
         }
 
+        private Vector2 ToNeighbourhoodVector(ushort rx, ushort ry)
         {
+            return neighbourhoodRect.Location.ToVector2() +
+                (new Vector2(rx, ry) * Constants.UI.NeighbourhoodSize / ushort.MaxValue);
+        }
 
+        private Vector2 ToRadarVector(byte rx, byte ry)
+        {
+            return radarRect.Location.ToVector2() +
+                (new Vector2(rx, ry) * Constants.UI.RadarSize / byte.MaxValue);
         }
 
         protected override void Dispose(bool disposing)

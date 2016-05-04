@@ -24,7 +24,7 @@
             float dx = x - this.X;
             float dy = y - this.Y;
 
-            return dx * dx + dy * dy <= squaredRadius;
+            return (dx * dx) + (dy * dy) <= squaredRadius;
         }
     }
 }

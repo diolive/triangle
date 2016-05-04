@@ -8,11 +8,11 @@ namespace Microsoft.AspNet.Builder
     {
         private delegate bool PathCompareDelegate(PathString path, PathString template);
 
-        private static readonly IDictionary<PathComparison, PathCompareDelegate> pathComparisons;
+        private static readonly IDictionary<PathComparison, PathCompareDelegate> PathComparisons;
 
         static MapMethodExtensions()
         {
-            pathComparisons = new Dictionary<PathComparison, PathCompareDelegate>
+            PathComparisons = new Dictionary<PathComparison, PathCompareDelegate>
             {
                 [PathComparison.StartsWith] = (path, template) => path.StartsWithSegments(template),
                 [PathComparison.Equals] = (path, template) => path.Equals(template),
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Builder
         /// <returns>The <see cref="Microsoft.AspNet.Builder.IApplicationBuilder"/> instance.</returns>
         public static IApplicationBuilder MapMethod(this IApplicationBuilder app, PathString pathMatch, string httpMethod, PathComparison pathComparison, Action<IApplicationBuilder> configuration)
         {
-            return app.MapWhen(context => context.Request.Method == httpMethod && pathComparisons[pathComparison](context.Request.Path, pathMatch), configuration);
+            return app.MapWhen(context => context.Request.Method == httpMethod && PathComparisons[pathComparison](context.Request.Path, pathMatch), configuration);
         }
 
         public enum PathComparison

@@ -16,10 +16,11 @@ namespace DioLive.Triangle.CoreClient
     /// </summary>
     public class TriangleGame : Game
     {
-        private GraphicsDeviceManager graphics;
-        private SpriteBatch spriteBatch;
         private readonly int windowWidth;
         private readonly int windowHeight;
+
+        private GraphicsDeviceManager graphics;
+        private SpriteBatch spriteBatch;
 
         private Color background;
         private Color[] teamColors;
@@ -90,6 +91,7 @@ namespace DioLive.Triangle.CoreClient
             {
                 serverUri += "/";
             }
+
             if (!serverUri.StartsWith("http://") && !serverUri.StartsWith("https://"))
             {
                 serverUri = "http://" + serverUri;
@@ -122,7 +124,9 @@ namespace DioLive.Triangle.CoreClient
         protected override void Update(GameTime gameTime)
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
                 Exit();
+            }
 
             if (this.state != null && this.state.Current.State == DotState.Destroyed)
             {

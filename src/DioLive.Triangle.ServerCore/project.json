@@ -10,6 +10,9 @@
     "DioLive.Common.Extensions": "1.0.0-*",
     "DioLive.Triangle.BindingModels": "1.0.0-*",
     "DioLive.Triangle.DataStorage": "1.0.0-*",
+    "DioLive.Triangle.Protocol": "1.0.0-*",
+    "DioLive.Triangle.Protocol.Binary": "1.0.0-*",
+    "DioLive.Triangle.Protocol.Json": "1.0.0-*",
     "Microsoft.AspNet.IISPlatformHandler": "1.0.0-rc1-final",
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-final",
     "Newtonsoft.Json": "8.0.3"

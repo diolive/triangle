@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DataStorage;
+using DioLive.Triangle.Protocol;
 using Microsoft.AspNet.Http;
 
 namespace DioLive.Triangle.ServerCore
@@ -14,14 +15,17 @@ namespace DioLive.Triangle.ServerCore
         private Space space;
         private Random random;
 
+        private IProtocol protocol;
+
         private CancellationTokenSource cancellationTokenSource;
         private CancellationToken cancellationToken;
 
-        public ServerWorker(RequestPool requestPool, Space space, Random random)
+        public ServerWorker(RequestPool requestPool, Space space, Random random, IProtocol protocol)
         {
             this.requestPool = requestPool;
             this.space = space;
             this.random = random;
+            this.protocol = protocol;
 
             this.cancellationTokenSource = new CancellationTokenSource();
             this.cancellationToken = this.cancellationTokenSource.Token;
@@ -29,21 +33,24 @@ namespace DioLive.Triangle.ServerCore
 
         public void StartAutoUpdate()
         {
-            Task.Run(async () =>
-            {
-                DateTime checkPoint = DateTime.UtcNow;
-                while (true)
+            Task.Run(
+                async () =>
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(40));
-                    if (cancellationToken.IsCancellationRequested)
+                    DateTime checkPoint = DateTime.UtcNow;
+                    while (true)
                     {
-                        break;
+                        await Task.Delay(TimeSpan.FromMilliseconds(40));
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            break;
+                        }
+
+                        DateTime now = DateTime.UtcNow;
+                        space.Update(now - checkPoint);
+                        checkPoint = now;
                     }
-                    DateTime now = DateTime.UtcNow;
-                    space.Update(now - checkPoint);
-                    checkPoint = now;
-                }
-            }, this.cancellationToken);
+                },
+                this.cancellationToken);
         }
 
         public void StopAutoUpdate()
@@ -53,67 +60,129 @@ namespace DioLive.Triangle.ServerCore
 
         public void UtilizeRequestPool()
         {
-            Task.Run(() =>
-            {
-                while (!requestPool.IsCompleted)
+            Task.Run(
+                () =>
                 {
-                    UpdateRequest request = requestPool.Take();
-                    Dot dot = space.FindById(request.Id);
-                    dot.MoveDirection = request.MoveDirection;
-                    dot.Velocity = Space.InitVelocity;
-                    dot.Beaming = request.Beaming;
-                }
-            }, this.cancellationToken);
+                    while (!requestPool.IsCompleted)
+                    {
+                        UpdateRequest request = requestPool.Take();
+                        Dot dot = space.FindById(request.Id);
+                        dot.MoveDirection = request.MoveDirection;
+                        dot.Velocity = Space.InitVelocity;
+                        if (request.BeamDirection.HasValue)
+                        {
+                            dot.BeamDirection = request.BeamDirection.Value;
+                            dot.State |= DotState.Beaming;
+                        }
+                        else
+                        {
+                            dot.BeamDirection = default(byte);
+                            dot.State &= ~DotState.Beaming;
+                        }
+                    }
+                },
+                this.cancellationToken);
         }
 
-        public async Task GetAdmin(HttpContext context)
+        // HACK: Debug use only
+        public async Task GetAdminAsync(HttpContext context)
         {
             var dots = this.space.GetAllDots().ToArray();
             await context.Response.WriteJsonAsync(dots);
         }
 
-        public async Task PostCreate(HttpContext context)
+        public void GetAdmin(HttpContext context)
+        {
+            GetAdminAsync(context).Wait();
+        }
+
+        public async Task PostCreateAsync(HttpContext context)
         {
             Dot newDot = new Dot((byte)this.random.Next(0, 3), 0, 0);
             this.space.Add(newDot);
-            await context.Response.WriteJsonAsync(new CreateDotResponse(newDot.Id, newDot.Team));
+            var content = await protocol.CreateResponse.EncodeAsync(new CreateResponse(newDot.Id, newDot.Team));
+            await content.CopyToAsync(context.Response.Body);
         }
 
-        public async Task GetState(HttpContext context)
+        public void PostCreate(HttpContext context)
+        {
+            PostCreateAsync(context).Wait();
+        }
+
+        public async Task GetCurrentAsync(HttpContext context)
         {
             Guid id = Guid.Parse(context.Request.Query["Id"].First());
             Dot dot = space.FindById(id);
-            if (dot == null)
-            {
-                await context.Response.WriteJsonAsync(StateResponse.Destroyed);
-                return;
-            }
 
-            CurrentDot current = new CurrentDot((BindingModels.DotState)dot.State, dot.MoveDirection, dot.Beaming);
-#if DEBUG
-            current.X = dot.X;
-            current.Y = dot.Y;
-#endif
+            CurrentResponse response = (dot != null)
+                ? new CurrentResponse(dot.State, dot.MoveDirection, dot.BeamDirection)
+                : CurrentResponse.Destroyed;
 
-            NeighbourDot[] neighbours = space.GetNeighbours(dot)
-                .Select(d => new NeighbourDot(d.Team, (int)(d.X - dot.X), (int)(d.Y - dot.Y), d.State == DataStorage.DotState.Stunned, d.Beaming))
-                .ToArray();
-            RadarDot[] radar = space.GetRadar(dot.Team, (int)dot.X, (int)dot.Y)
-                .Select(d => new RadarDot(d.Team, (int)(d.X - dot.X), (int)(d.Y - dot.Y)))
-                .ToArray();
-            await context.Response.WriteJsonAsync(new StateResponse(current, neighbours, radar));
+            var content = await protocol.CurrentResponse.EncodeAsync(response);
+            await content.CopyToAsync(context.Response.Body);
         }
 
-        public async Task PostUpdate(HttpContext context)
+        public void GetCurrent(HttpContext context)
         {
-            var updateRequest = await context.Request.ReadJsonAsync<UpdateRequest>();
+            GetCurrentAsync(context).Wait();
+        }
+
+        public async Task GetNeighboursAsync(HttpContext context)
+        {
+            Guid id = Guid.Parse(context.Request.Query["Id"].First());
+            Dot dot = space.FindById(id);
+
+            NeighboursResponse response = (dot != null)
+                ? new NeighboursResponse(space.GetNeighbours(dot.X, dot.Y).ToArray())
+                : NeighboursResponse.None;
+
+            var content = await protocol.NeighboursResponse.EncodeAsync(response);
+            await content.CopyToAsync(context.Response.Body);
+        }
+
+        public void GetNeighbours(HttpContext context)
+        {
+            GetNeighboursAsync(context).Wait();
+        }
+
+        public async Task GetRadarAsync(HttpContext context)
+        {
+            Guid id = Guid.Parse(context.Request.Query["Id"].First());
+            Dot dot = space.FindById(id);
+
+            RadarResponse response = (dot != null)
+                ? new RadarResponse(space.GetRadar(dot.Team, dot.X, dot.Y).ToArray())
+                : RadarResponse.None;
+
+            var content = await protocol.RadarResponse.EncodeAsync(response);
+            await content.CopyToAsync(context.Response.Body);
+        }
+
+        public void GetRadar(HttpContext context)
+        {
+            GetRadarAsync(context).Wait();
+        }
+
+        public void PostUpdate(HttpContext context)
+        {
+            var updateRequest = protocol.UpdateRequest.Read(context.Request.Body);
             requestPool.Add(updateRequest);
         }
 
-        public async Task PostSignout(HttpContext context)
+        public async Task PostUpdateAsync(HttpContext context)
         {
-            var signoutRequest = await context.Request.ReadJsonAsync<SignoutRequest>();
+            await Task.Run(() => PostUpdate(context));
+        }
+
+        public void PostSignout(HttpContext context)
+        {
+            var signoutRequest = protocol.SignoutRequest.Read(context.Request.Body);
             space.RemoveById(signoutRequest.Id);
+        }
+
+        public async Task PostSignoutAsync(HttpContext context)
+        {
+            await Task.Run(() => PostSignout(context));
         }
 
         void IDisposable.Dispose()

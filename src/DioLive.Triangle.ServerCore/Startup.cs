@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DataStorage;
+using DioLive.Triangle.Protocol;
+using DioLive.Triangle.Protocol.Json;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
@@ -20,6 +19,7 @@ namespace DioLive.Triangle.ServerCore
             services.AddSingleton<Space>();
             services.AddSingleton<Random>();
             services.AddSingleton<ServerWorker>();
+            services.AddSingleton<IProtocol, JsonProtocol>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -29,12 +29,13 @@ namespace DioLive.Triangle.ServerCore
 
             ServerWorker serverWorker = app.ApplicationServices.GetRequiredService<ServerWorker>();
 
-            app.MapGet("/admin", cfg => cfg.Run(serverWorker.GetAdmin));
-            app.MapPost("/create", cfg => cfg.Run(serverWorker.PostCreate));
-            app.MapGet("/state", cfg => cfg.Run(serverWorker.GetState));
-            app.MapPost("/update", cfg => cfg.Run(serverWorker.PostUpdate));
-            app.MapPost("/signout", cfg => cfg.Run(serverWorker.PostSignout));
-
+            app.MapGet("/admin", cfg => cfg.Run(serverWorker.GetAdminAsync));
+            app.MapPost("/create", cfg => cfg.Run(serverWorker.PostCreateAsync));
+            app.MapGet("/current", cfg => cfg.Run(serverWorker.GetCurrentAsync));
+            app.MapGet("/neighbours", cfg => cfg.Run(serverWorker.GetNeighboursAsync));
+            app.MapGet("/radar", cfg => cfg.Run(serverWorker.GetRadarAsync));
+            app.MapPost("/update", cfg => cfg.Run(serverWorker.PostUpdateAsync));
+            app.MapPost("/signout", cfg => cfg.Run(serverWorker.PostSignoutAsync));
 
             serverWorker.StartAutoUpdate();
             serverWorker.UtilizeRequestPool();

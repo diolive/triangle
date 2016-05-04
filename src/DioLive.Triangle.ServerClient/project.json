@@ -18,8 +18,10 @@
     }
   },
   "dependencies": {
-    "System.Net.Http": "4.0.1-beta-23516",
-    "Microsoft.AspNet.WebApi.Client": "5.2.3",
-    "DioLive.Triangle.BindingModels": "1.0.0-*"
+    "DioLive.Triangle.BindingModels": "1.0.0-*",
+    "DioLive.Triangle.Protocol": "1.0.0-*",
+    "DioLive.Triangle.Protocol.Binary": "1.0.0-*",
+    "DioLive.Triangle.Protocol.Json": "1.0.0-*",
+    "System.Net.Http": "4.0.1-beta-23516"
   }
 }

@@ -4,35 +4,38 @@ namespace DioLive.Triangle.Geometry
 {
     public struct Rectangle
     {
-        private float minX;
-        private float maxX;
-        private float minY;
-        private float maxY;
-
-        public Rectangle(float x, float y, float width, float height)
+        public Rectangle(int centerX, int centerY, int width, int height)
         {
-            this.X = x;
-            this.Y = y;
+            this.CenterX = centerX;
+            this.CenterY = centerY;
             this.Width = width;
             this.Height = height;
 
-            this.minX = x - width / 2;
-            this.maxX = x + width / 2;
-            this.minY = y - height / 2;
-            this.maxY = y + height / 2;
+            this.Left = centerX - (width / 2);
+            this.Right = centerX + (width / 2);
+            this.Top = centerY - (height / 2);
+            this.Bottom = centerY + (height / 2);
         }
 
-        public float X { get; }
+        public int CenterX { get; }
 
-        public float Y { get; }
+        public int CenterY { get; }
 
-        public float Width { get; }
+        public int Width { get; }
 
-        public float Height { get; }
+        public int Height { get; }
 
-        public bool Contains(float x, float y)
+        public int Left { get; }
+
+        public int Right { get; }
+
+        public int Top { get; }
+
+        public int Bottom { get; }
+
+        public bool Contains(int x, int y)
         {
-            return x.Between(this.minX, this.maxX) && y.Between(this.minY, this.maxY);
+            return x.Between(this.Left, this.Right) && y.Between(this.Top, this.Bottom);
         }
     }
 }

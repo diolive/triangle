@@ -103,7 +103,7 @@ namespace DioLive.Triangle.CoreClient
                 serverUri = "http://" + serverUri;
             }
 
-            this.client = new JsonServerClient(new Uri(serverUri));
+            this.client = new BinaryServerClient(new Uri(serverUri));
 
             background = XnaHelpers.ParseColor(configuration.Colors.Background);
             teamColors = configuration.Colors.Teams.Select(XnaHelpers.ParseColor).ToArray();

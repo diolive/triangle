@@ -1,7 +1,7 @@
 ﻿using System;
 using DioLive.Triangle.DataStorage;
 using DioLive.Triangle.Protocol;
-using DioLive.Triangle.Protocol.Json;
+using DioLive.Triangle.Protocol.Binary;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
@@ -19,7 +19,7 @@ namespace DioLive.Triangle.ServerCore
             services.AddSingleton<Space>();
             services.AddSingleton<Random>();
             services.AddSingleton<ServerWorker>();
-            services.AddSingleton<IProtocol, JsonProtocol>();
+            services.AddSingleton<IProtocol, BinaryProtocol>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

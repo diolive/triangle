@@ -1,17 +1,11 @@
 ﻿namespace DioLive.Triangle.BindingModels
 {
-    public enum DotState
+    public enum DotState : byte
     {
-        // No beams
-        Free = 0,
-
-        // One beam
-        Fired = 1,
-
-        // Two beams
-        Stunned = 2,
-
-        // Destroyed or disconnected
-        Destroyed = 3,
+        Destroyed = 0,
+        Alive = 1,
+        Beaming = 2,
+        Fired = 4,
+        Stunned = 8,
     }
 }

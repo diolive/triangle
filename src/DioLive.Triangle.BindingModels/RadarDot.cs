@@ -5,17 +5,17 @@ namespace DioLive.Triangle.BindingModels
     public class RadarDot
     {
         [JsonConstructor]
-        public RadarDot(byte team, int offsetX, int offsetY)
+        public RadarDot(byte team, byte rx, byte ry)
         {
             this.Team = team;
-            this.OffsetX = offsetX;
-            this.OffsetY = offsetY;
+            this.RX = rx;
+            this.RY = ry;
         }
 
         public byte Team { get; }
 
-        public int OffsetX { get; }
+        public byte RX { get; }
 
-        public int OffsetY { get; }
+        public byte RY { get; }
     }
 }

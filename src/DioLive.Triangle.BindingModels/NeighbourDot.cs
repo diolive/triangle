@@ -5,23 +5,23 @@ namespace DioLive.Triangle.BindingModels
     public class NeighbourDot
     {
         [JsonConstructor]
-        public NeighbourDot(byte team, int offsetX, int offsetY, bool stunned = false, float? beaming = null)
+        public NeighbourDot(byte team, ushort rx, ushort ry, DotState state, byte beamDirection = default(byte))
         {
             this.Team = team;
-            this.OffsetX = offsetX;
-            this.OffsetY = offsetY;
-            this.Stunned = stunned;
-            this.Beaming = beaming;
+            this.RX = rx;
+            this.RY = ry;
+            this.State = state;
+            this.BeamDirection = beamDirection;
         }
 
         public byte Team { get; }
 
-        public int OffsetX { get; }
+        public ushort RX { get; }
 
-        public int OffsetY { get; }
+        public ushort RY { get; }
 
-        public bool Stunned { get; }
+        public DotState State { get; set; }
 
-        public float? Beaming { get; }
+        public byte BeamDirection { get; set; }
     }
 }

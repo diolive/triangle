@@ -3,10 +3,10 @@ using Newtonsoft.Json;
 
 namespace DioLive.Triangle.BindingModels
 {
-    public class CreateDotResponse
+    public class CreateResponse
     {
         [JsonConstructor]
-        public CreateDotResponse(Guid id, byte team)
+        public CreateResponse(Guid id, byte team)
         {
             this.Id = id;
             this.Team = team;

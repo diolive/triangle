@@ -6,17 +6,17 @@ namespace DioLive.Triangle.BindingModels
     public class UpdateRequest
     {
         [JsonConstructor]
-        public UpdateRequest(Guid id, float moveDirection, float? beaming = null)
+        public UpdateRequest(Guid id, byte moveDirection, byte? beamDirection)
         {
             this.Id = id;
             this.MoveDirection = moveDirection;
-            this.Beaming = beaming;
+            this.BeamDirection = beamDirection;
         }
 
         public Guid Id { get; }
 
-        public float MoveDirection { get; }
+        public byte MoveDirection { get; }
 
-        public float? Beaming { get; }
+        public byte? BeamDirection { get; }
     }
 }

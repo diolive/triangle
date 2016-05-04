@@ -1,7 +1,7 @@
-{
+﻿{
   "version": "1.0.0-*",
-  "description": "DioLive.Triangle.DataStorage Class Library",
-  "authors": [ "DioLive Studio" ],
+  "description": "DioLive.Triangle.Helpers Class Library",
+  "authors": [ "Dio" ],
   "tags": [ "" ],
   "projectUrl": "",
   "licenseUrl": "",
@@ -17,10 +17,5 @@
         "System.Threading": "4.0.11-beta-23516"
       }
     }
-  },
-  "dependencies": {
-    "DioLive.Common.Helpers": "1.0.0-*",
-    "DioLive.Triangle.BindingModels": "1.0.0-*",
-    "DioLive.Triangle.Geometry": "1.0.0-*"
   }
 }

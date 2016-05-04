@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DioLive.Common.Helpers;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.ServerClient;
 using Microsoft.Xna.Framework;
@@ -102,6 +103,9 @@ namespace DioLive.Triangle.CoreClient
             background = ParseColor(configuration.Colors.Background);
             teamColors = configuration.Colors.Teams.Select(ParseColor).ToArray();
             beamColor = ParseColor(configuration.Colors.Beam);
+            background = XnaHelpers.ParseColor(configuration.Colors.Background);
+            teamColors = configuration.Colors.Teams.Select(XnaHelpers.ParseColor).ToArray();
+            beamColor = XnaHelpers.ParseColor(configuration.Colors.Beam);
 
             dotTexture = Content.Load<Texture2D>("dot");
             beamTexture = Content.Load<Texture2D>("rounded");
@@ -223,41 +227,8 @@ namespace DioLive.Triangle.CoreClient
             spriteBatch.Draw(dotTexture, new Rectangle(radarCenter.X + x * Constants.UI.RadarSize / Constants.Space.RadarScope - Constants.UI.RadarDotRadius, radarCenter.Y + y * Constants.UI.RadarSize / Constants.Space.RadarScope - Constants.UI.RadarDotRadius, 2 * Constants.UI.RadarDotRadius, 2 * Constants.UI.RadarDotRadius), teamColors[team]);
         }
 
-        private static Color ParseColor(string hexColor)
         {
-            byte r;
-            byte g;
-            byte b;
-            byte a;
 
-            switch (hexColor.Length)
-            {
-                case 8:
-                    a = Convert.ToByte(hexColor.Substring(0, 2), 16);
-                    r = Convert.ToByte(hexColor.Substring(2, 2), 16);
-                    g = Convert.ToByte(hexColor.Substring(4, 2), 16);
-                    b = Convert.ToByte(hexColor.Substring(6, 2), 16);
-                    break;
-
-                case 6:
-                    a = 255;
-                    r = Convert.ToByte(hexColor.Substring(0, 2), 16);
-                    g = Convert.ToByte(hexColor.Substring(2, 2), 16);
-                    b = Convert.ToByte(hexColor.Substring(4, 2), 16);
-                    break;
-
-                case 3:
-                    a = 255;
-                    r = Convert.ToByte(new string(hexColor[0], 2), 16);
-                    g = Convert.ToByte(new string(hexColor[1], 2), 16);
-                    b = Convert.ToByte(new string(hexColor[2], 2), 16);
-                    break;
-
-                default:
-                    throw new ArgumentException($"Unknown color definition: {hexColor}", nameof(hexColor));
-            }
-
-            return new Color(r, g, b, a);
         }
 
         protected override void Dispose(bool disposing)

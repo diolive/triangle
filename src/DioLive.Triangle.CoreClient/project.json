@@ -12,6 +12,7 @@
 
   "dependencies": {
     "DioLive.Common.Extensions": "1.0.0-*",
+    "DioLive.Common.Helpers": "1.0.0-*",
     "DioLive.Triangle.ServerClient": "1.0.0-*",
     "MonoGame.Framework.DesktopGL": "3.5.1.1679"
   },

@@ -24,7 +24,11 @@ namespace DioLive.Triangle.CoreClient
         {
             public static TimeSpan SendUpdateInterval { get; } = TimeSpan.FromMilliseconds(50);
 
-            public static TimeSpan GetStateInterval { get; } = TimeSpan.FromMilliseconds(200);
+            public static TimeSpan GetCurrentInterval { get; } = TimeSpan.FromMilliseconds(50);
+
+            public static TimeSpan GetNeighboursInterval { get; } = TimeSpan.FromMilliseconds(200);
+
+            public static TimeSpan GetRadarInterval { get; } = TimeSpan.FromMilliseconds(500);
         }
     }
 }

@@ -41,7 +41,9 @@ namespace DioLive.Triangle.CoreClient
         private RadarResponse radar;
 
         private GameTimer sendUpdateTimer;
-        private GameTimer getStateTimer;
+        private GameTimer getCurrentTimer;
+        private GameTimer getNeighboursTimer;
+        private GameTimer getRadarTimer;
 
         public TriangleGame()
         {
@@ -75,7 +77,9 @@ namespace DioLive.Triangle.CoreClient
             this.radarDotSize = new Vector2(Constants.UI.RadarDotRadius);
 
             this.sendUpdateTimer = new GameTimer(Constants.Timers.SendUpdateInterval);
-            this.getStateTimer = new GameTimer(Constants.Timers.GetStateInterval);
+            this.getCurrentTimer = new GameTimer(Constants.Timers.GetCurrentInterval);
+            this.getNeighboursTimer = new GameTimer(Constants.Timers.GetNeighboursInterval);
+            this.getRadarTimer = new GameTimer(Constants.Timers.GetRadarInterval);
 
             base.Initialize();
         }
@@ -160,11 +164,21 @@ namespace DioLive.Triangle.CoreClient
                 }
             }
 
-            this.getStateTimer += gameTime.ElapsedGameTime;
-            if (this.getStateTimer.CheckElapsed())
+            this.getCurrentTimer += gameTime.ElapsedGameTime;
+            if (this.getCurrentTimer.CheckElapsed())
             {
                 this.current = client.GetCurrent();
+            }
+
+            this.getNeighboursTimer += gameTime.ElapsedGameTime;
+            if (this.getNeighboursTimer.CheckElapsed())
+            {
                 this.neighbours = client.GetNeighbours();
+            }
+
+            this.getRadarTimer += gameTime.ElapsedGameTime;
+            if (this.getRadarTimer.CheckElapsed())
+            {
                 this.radar = client.GetRadar();
             }
 

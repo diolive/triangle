@@ -2,9 +2,11 @@
 
 namespace DioLive.Triangle.CoreClient
 {
-    public class GameTimer
+    public class ManualTimer
     {
-        public GameTimer(TimeSpan updateInterval)
+        public event EventHandler Tick;
+
+        public ManualTimer(TimeSpan updateInterval)
         {
             this.UpdateInterval = updateInterval;
         }
@@ -16,25 +18,23 @@ namespace DioLive.Triangle.CoreClient
         public void AddTimeElapsed(TimeSpan timeElapsed)
         {
             this.TimeElapsed += timeElapsed;
-        }
 
-        public bool CheckElapsed()
-        {
-            if (this.TimeElapsed >= this.UpdateInterval)
+            while (this.TimeElapsed >= this.UpdateInterval)
             {
                 this.TimeElapsed -= this.UpdateInterval;
-                return true;
-            }
-            else
-            {
-                return false;
+                this.OnTick();
             }
         }
 
-        public static GameTimer operator +(GameTimer gameTimer, TimeSpan timeElapsed)
+        public static ManualTimer operator +(ManualTimer gameTimer, TimeSpan timeElapsed)
         {
             gameTimer.AddTimeElapsed(timeElapsed);
             return gameTimer;
+        }
+
+        protected virtual void OnTick()
+        {
+            this.Tick?.Invoke(this, EventArgs.Empty);
         }
     }
 }

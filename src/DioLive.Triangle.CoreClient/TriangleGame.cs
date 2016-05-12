@@ -110,15 +110,10 @@ namespace DioLive.Triangle.CoreClient
             {
                 serverUri = "http://" + serverUri;
             }
+            Assets.Load(this.Content);
 
             this.client = new BinaryServerClient(new Uri(serverUri));
 
-            background = XnaHelpers.ParseColor(configuration.Colors.Background);
-            teamColors = configuration.Colors.Teams.Select(XnaHelpers.ParseColor).ToArray();
-            beamColor = XnaHelpers.ParseColor(configuration.Colors.Beam);
-
-            dotTexture = Content.Load<Texture2D>("dot");
-            beamTexture = Content.Load<Texture2D>("rounded");
         }
 
         /// <summary>

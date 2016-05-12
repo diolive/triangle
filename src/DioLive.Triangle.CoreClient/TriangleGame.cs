@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using DioLive.Common.Helpers;
 using DioLive.Triangle.BindingModels;
+using DioLive.Triangle.CoreClient.Configuration;
 using DioLive.Triangle.ServerClient;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -28,6 +29,8 @@ namespace DioLive.Triangle.CoreClient
         private Texture2D beamTexture;
         private Rectangle neighbourhoodRect;
         private Rectangle radarRect;
+        private IConfiguration configuration;
+
         private Rectangle windowBounds;
         private Vector2 dotSize;
         private Vector2 beamSize;
@@ -94,7 +97,8 @@ namespace DioLive.Triangle.CoreClient
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            Configuration configuration = JsonConvert.DeserializeObject<Configuration>(File.ReadAllText("appconfig.json"));
+            this.configuration = ConfigurationLoader.Load("appconfig.json");
+            this.client = new BinaryServerClient(new Uri(this.configuration.ServerUri));
 
             string serverUri = configuration.ServerUri;
             if (!serverUri.EndsWith("/"))
@@ -191,7 +195,7 @@ namespace DioLive.Triangle.CoreClient
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(background);
+            GraphicsDevice.Clear(this.configuration.Colors.Background);
 
             if (this.current == null)
             {

@@ -1,14 +1,15 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
+
 using DioLive.Common.Helpers;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.CoreClient.Configuration;
+using DioLive.Triangle.CoreClient.GameObjects;
 using DioLive.Triangle.ServerClient;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Newtonsoft.Json;
 
 namespace DioLive.Triangle.CoreClient
 {
@@ -23,30 +24,19 @@ namespace DioLive.Triangle.CoreClient
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
 
-        private Color background;
-        private Color[] teamColors;
-        private Texture2D dotTexture;
-        private Texture2D beamTexture;
-        private Rectangle neighbourhoodRect;
-        private Rectangle radarRect;
         private IConfiguration configuration;
 
         private Rectangle windowBounds;
-        private Vector2 dotSize;
-        private Vector2 beamSize;
-        private Vector2 radarDotSize;
-        private Color beamColor;
 
         private ServerClientBase client;
 
         private CurrentResponse current;
-        private NeighboursResponse neighbours;
-        private RadarResponse radar;
 
-        private GameTimer sendUpdateTimer;
-        private GameTimer getCurrentTimer;
-        private GameTimer getNeighboursTimer;
-        private GameTimer getRadarTimer;
+        private ManualTimer sendUpdateTimer;
+        private ManualTimer getCurrentTimer;
+
+        private Neighbourhood neighbourhood;
+        private Radar radar;
 
         public TriangleGame()
         {
@@ -72,17 +62,34 @@ namespace DioLive.Triangle.CoreClient
         {
             // TODO: Add your initialization logic here
             var viewport = GraphicsDevice.Viewport;
-            this.neighbourhoodRect = new Rectangle(0, 0, Constants.UI.NeighbourhoodSize, Constants.UI.NeighbourhoodSize);
-            this.radarRect = new Rectangle(Constants.UI.NeighbourhoodSize, 0, Constants.UI.RadarSize, Constants.UI.RadarSize);
             this.windowBounds = new Rectangle(0, 0, this.windowWidth, this.windowHeight);
-            this.dotSize = new Vector2(Constants.UI.DotRadius * 2) * Constants.UI.NeighbourhoodSize / Constants.Space.Scope;
-            this.beamSize = new Vector2(Constants.UI.BeamLength, Constants.UI.BeamWidth) * Constants.UI.NeighbourhoodSize / Constants.Space.Scope;
-            this.radarDotSize = new Vector2(Constants.UI.RadarDotRadius);
 
-            this.sendUpdateTimer = new GameTimer(Constants.Timers.SendUpdateInterval);
-            this.getCurrentTimer = new GameTimer(Constants.Timers.GetCurrentInterval);
-            this.getNeighboursTimer = new GameTimer(Constants.Timers.GetNeighboursInterval);
-            this.getRadarTimer = new GameTimer(Constants.Timers.GetRadarInterval);
+            this.sendUpdateTimer = new ManualTimer(Constants.Timers.SendUpdateInterval);
+            this.sendUpdateTimer.Tick += (s, e) =>
+            {
+                MouseState mouseState = Mouse.GetState();
+                if (this.windowBounds.Contains(mouseState.Position))
+                {
+                    Point diff = mouseState.Position - this.neighbourhood.Bounds.Center;
+                    double angle = Math.Atan2(diff.Y, diff.X);
+                    byte direction = AngleHelper.RadiansToDirection(angle);
+
+                    if (mouseState.LeftButton == ButtonState.Pressed)
+                    {
+                        this.client.Update(direction, direction);
+                    }
+                    else
+                    {
+                        this.client.Update(direction);
+                    }
+                }
+            };
+
+            this.getCurrentTimer = new ManualTimer(Constants.Timers.GetCurrentInterval);
+            this.getCurrentTimer.Tick += (s, e) =>
+            {
+                this.current = client.GetCurrent();
+            };
 
             base.Initialize();
         }
@@ -100,20 +107,10 @@ namespace DioLive.Triangle.CoreClient
             this.configuration = ConfigurationLoader.Load("appconfig.json");
             this.client = new BinaryServerClient(new Uri(this.configuration.ServerUri));
 
-            string serverUri = configuration.ServerUri;
-            if (!serverUri.EndsWith("/"))
-            {
-                serverUri += "/";
-            }
-
-            if (!serverUri.StartsWith("http://") && !serverUri.StartsWith("https://"))
-            {
-                serverUri = "http://" + serverUri;
-            }
             Assets.Load(this.Content);
 
-            this.client = new BinaryServerClient(new Uri(serverUri));
-
+            this.neighbourhood = new Neighbourhood(this.configuration, this.client);
+            this.radar = new Radar(this.configuration, this.client);
         }
 
         /// <summary>
@@ -143,43 +140,10 @@ namespace DioLive.Triangle.CoreClient
             }
 
             this.sendUpdateTimer += gameTime.ElapsedGameTime;
-            if (this.sendUpdateTimer.CheckElapsed())
-            {
-                MouseState mouseState = Mouse.GetState();
-                if (windowBounds.Contains(mouseState.Position))
-                {
-                    Point diff = mouseState.Position - this.neighbourhoodRect.Center;
-                    double angle = Math.Atan2(diff.Y, diff.X);
-                    byte direction = AngleHelper.RadiansToDirection(angle);
-
-                    if (mouseState.LeftButton == ButtonState.Pressed)
-                    {
-                        client.Update(direction, direction);
-                    }
-                    else
-                    {
-                        client.Update(direction);
-                    }
-                }
-            }
-
             this.getCurrentTimer += gameTime.ElapsedGameTime;
-            if (this.getCurrentTimer.CheckElapsed())
-            {
-                this.current = client.GetCurrent();
-            }
 
-            this.getNeighboursTimer += gameTime.ElapsedGameTime;
-            if (this.getNeighboursTimer.CheckElapsed())
-            {
-                this.neighbours = client.GetNeighbours();
-            }
-
-            this.getRadarTimer += gameTime.ElapsedGameTime;
-            if (this.getRadarTimer.CheckElapsed())
-            {
-                this.radar = client.GetRadar();
-            }
+            this.neighbourhood.Update(gameTime);
+            this.radar.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -201,67 +165,18 @@ namespace DioLive.Triangle.CoreClient
 
             if (this.current.State.HasFlag(DotState.Alive))
             {
-                if (this.neighbours != null)
-                {
-                    foreach (var dot in this.neighbours.Neighbours)
-                    {
-                        if (dot.State.HasFlag(DotState.Beaming))
-                        {
-                            DrawBeam(spriteBatch, dot.RX, dot.RY, dot.BeamDirection);
-                        }
-
-                        DrawDot(spriteBatch, dot);
-                    }
-                }
-
-                if (this.radar != null)
-                {
-                    foreach (var dot in this.radar.RadarDots)
-                    {
-                        DrawRadarPoint(spriteBatch, dot.RX, dot.RY, dot.Team);
-                    }
-                }
+                this.neighbourhood.Draw(spriteBatch);
             }
             else
             {
                 Window.Title = "End";
             }
 
+            this.radar.Draw(spriteBatch);
+
             spriteBatch.End();
 
             base.Draw(gameTime);
-        }
-
-        private void DrawDot(SpriteBatch spriteBatch, NeighbourDot dot)
-        {
-            Vector2 dotCenter = ToNeighbourhoodVector(dot.RX, dot.RY);
-            Rectangle dotRect = new Rectangle((dotCenter - (dotSize / 2)).ToPoint(), dotSize.ToPoint());
-            spriteBatch.Draw(dotTexture, dotRect, teamColors[dot.Team]);
-        }
-
-        private void DrawBeam(SpriteBatch spriteBatch, ushort rx, ushort ry, byte direction)
-        {
-            Vector2 beamStart = ToNeighbourhoodVector(rx, ry);
-            spriteBatch.Draw(this.beamTexture, new Rectangle(beamStart.ToPoint(), this.beamSize.ToPoint()), null, this.beamColor, (float)AngleHelper.DirectionToRadians(direction), new Vector2(0, this.beamTexture.Height / 2), SpriteEffects.None, 0f);
-        }
-
-        private void DrawRadarPoint(SpriteBatch spriteBatch, byte rx, byte ry, int team)
-        {
-            Vector2 dotCenter = ToRadarVector(rx, ry);
-            Rectangle dotRect = new Rectangle((dotCenter - (radarDotSize / 2)).ToPoint(), radarDotSize.ToPoint());
-            spriteBatch.Draw(dotTexture, dotRect, teamColors[team]);
-        }
-
-        private Vector2 ToNeighbourhoodVector(ushort rx, ushort ry)
-        {
-            return neighbourhoodRect.Location.ToVector2() +
-                (new Vector2(rx, ry) * Constants.UI.NeighbourhoodSize / ushort.MaxValue);
-        }
-
-        private Vector2 ToRadarVector(byte rx, byte ry)
-        {
-            return radarRect.Location.ToVector2() +
-                (new Vector2(rx, ry) * Constants.UI.RadarSize / byte.MaxValue);
         }
 
         protected override void Dispose(bool disposing)

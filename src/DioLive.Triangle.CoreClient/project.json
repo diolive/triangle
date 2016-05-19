@@ -9,7 +9,10 @@
     "DioLive.Common.Helpers": "1.0.0-*",
     "DioLive.Triangle.BindingModels": "1.0.0-*",
     "DioLive.Triangle.ServerClient": "1.0.0-*",
-    "MonoGame.Framework.DesktopGL": "3.5.1.1679"
+    "MonoGame.Framework.WindowsDX": "3.5.1.1679",
+    "SharpDX": "3.0.2",
+    "SharpDX.Direct3D11": "3.0.2",
+    "SharpDX."
   },
 
   "frameworks": {

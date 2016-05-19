@@ -1,4 +1,5 @@
-﻿using DioLive.Triangle.BindingModels;
+﻿using DioLive.Common.Helpers;
+using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.CoreClient.Configuration;
 using DioLive.Triangle.ServerClient;
 using Microsoft.Xna.Framework;

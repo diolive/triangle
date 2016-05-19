@@ -13,5 +13,5 @@
     ],
     "beam": "FFFFD700"
   },
-  "serverUri": "localhost:5000"
+  "serverUri": "http://diolivetriangle.azurewebsites.net/"
 }

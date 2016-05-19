@@ -2,9 +2,9 @@
 using DioLive.Triangle.DataStorage;
 using DioLive.Triangle.Protocol;
 using DioLive.Triangle.Protocol.Binary;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DioLive.Triangle.ServerCore
@@ -12,7 +12,6 @@ namespace DioLive.Triangle.ServerCore
     public class Startup
     {
         // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<RequestPool>();
@@ -25,8 +24,6 @@ namespace DioLive.Triangle.ServerCore
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
-            app.UseIISPlatformHandler();
-
             ServerWorker serverWorker = app.ApplicationServices.GetRequiredService<ServerWorker>();
 
             app.MapGet("/admin", cfg => cfg.Run(serverWorker.GetAdminAsync));
@@ -45,8 +42,5 @@ namespace DioLive.Triangle.ServerCore
                 await context.Response.WriteAsync("Hello World!");
             });
         }
-
-        // Entry point for the application.
-        public static void Main(string[] args) => WebApplication.Run<Startup>(args);
     }
 }

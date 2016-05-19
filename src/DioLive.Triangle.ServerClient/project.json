@@ -1,27 +1,18 @@
 {
   "version": "1.0.0-*",
-  "description": "DioLive.Triangle.ServerClient Class Library",
-  "authors": [ "DioLive Studio" ],
-  "tags": [ "" ],
-  "projectUrl": "",
-  "licenseUrl": "",
-  "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
-      "dependencies": {
-        "Microsoft.CSharp": "4.0.1-beta-23516",
-        "System.Collections": "4.0.11-beta-23516",
-        "System.Linq": "4.0.1-beta-23516",
-        "System.Runtime": "4.0.21-beta-23516",
-        "System.Threading": "4.0.11-beta-23516"
-      }
-    }
-  },
+
   "dependencies": {
+    "NETStandard.Library": "1.5.0-rc2-24027",
+    "System.Net.Http": "4.0.1-rc2-24027",
     "DioLive.Triangle.BindingModels": "1.0.0-*",
     "DioLive.Triangle.Protocol": "1.0.0-*",
     "DioLive.Triangle.Protocol.Binary": "1.0.0-*",
     "DioLive.Triangle.Protocol.Json": "1.0.0-*",
-    "System.Net.Http": "4.0.1-beta-23516"
+  },
+
+  "frameworks": {
+    "netstandard1.5": {
+      "imports": "dnxcore50"
+    }
   }
 }

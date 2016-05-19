@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DioLive.Triangle.CoreClient
+namespace DioLive.Common.Helpers
 {
     public class ManualTimer
     {

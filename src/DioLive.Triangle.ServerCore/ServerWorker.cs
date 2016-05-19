@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DataStorage;
 using DioLive.Triangle.Protocol;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
 namespace DioLive.Triangle.ServerCore
 {

@@ -29,13 +29,13 @@ namespace DioLive.Triangle.ServerClient
 
         protected override async Task<CreateResponse> InitializeProtectedAsync()
         {
-            HttpResponseMessage response = await HttpClient.PostAsync("create", null);
+            HttpResponseMessage response = await HttpClient.PostAsync("create", null).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException("Request error on InitializeAsync");
             }
 
-            return await protocol.CreateResponse.DecodeAsync(response.Content);
+            return await protocol.CreateResponse.DecodeAsync(response.Content).ConfigureAwait(false);
         }
 
         protected override async Task<CurrentResponse> GetCurrentProtectedAsync()

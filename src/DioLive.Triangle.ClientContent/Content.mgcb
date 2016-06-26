@@ -1,7 +1,7 @@
 
 #----------------------------- Global Properties ----------------------------#
 
-/outputDir:..\DioLive.Triangle.CoreClient\Content
+/outputDir:..\DioLive.Triangle.DesktopClient\Content
 /intermediateDir:obj
 /platform:DesktopGL
 /config:

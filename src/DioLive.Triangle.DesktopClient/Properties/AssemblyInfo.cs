@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DioLive.Common.Extensions")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("DioLive.Triangle.DesktopClient")]
+[assembly: AssemblyProduct("DioLive.Triangle.DesktopClient")]
 [assembly: AssemblyConfiguration("")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("DioLive.Common.Extensions")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("392b6c6b-b1f0-4baa-af47-1ca185c4d6ab")]
+[assembly: Guid("035cfaf9-689d-41a8-b405-c5217718f8ca")]
 
 // Version information for an assembly consists of the following four values:
 //

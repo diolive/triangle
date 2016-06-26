@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DioLive.Triangle.Protocol;
 using Newtonsoft.Json;
 
 namespace DioLive.Triangle.Protocol.Json

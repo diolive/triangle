@@ -2,10 +2,12 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DataStorage;
 using DioLive.Triangle.Protocol;
-using Microsoft.AspNetCore.Http;
+
+using Microsoft.Owin;
 
 namespace DioLive.Triangle.ServerCore
 {
@@ -85,18 +87,18 @@ namespace DioLive.Triangle.ServerCore
         }
 
         // HACK: Debug use only
-        public async Task GetAdminAsync(HttpContext context)
+        public async Task GetAdminAsync(IOwinContext context)
         {
             var dots = this.space.GetAllDots().ToArray();
             await context.Response.WriteJsonAsync(dots);
         }
 
-        public void GetAdmin(HttpContext context)
+        public void GetAdmin(IOwinContext context)
         {
             GetAdminAsync(context).Wait();
         }
 
-        public async Task PostCreateAsync(HttpContext context)
+        public async Task PostCreateAsync(IOwinContext context)
         {
             Dot newDot = new Dot((byte)this.random.Next(0, 3), 0, 0);
             this.space.Add(newDot);
@@ -104,14 +106,14 @@ namespace DioLive.Triangle.ServerCore
             await content.CopyToAsync(context.Response.Body);
         }
 
-        public void PostCreate(HttpContext context)
+        public void PostCreate(IOwinContext context)
         {
             PostCreateAsync(context).Wait();
         }
 
-        public async Task GetCurrentAsync(HttpContext context)
+        public async Task GetCurrentAsync(IOwinContext context)
         {
-            Guid id = Guid.Parse(context.Request.Query["Id"].First());
+            Guid id = Guid.Parse(context.Request.Query["Id"]);
             Dot dot = space.FindById(id);
 
             CurrentResponse response = (dot != null)
@@ -122,14 +124,14 @@ namespace DioLive.Triangle.ServerCore
             await content.CopyToAsync(context.Response.Body);
         }
 
-        public void GetCurrent(HttpContext context)
+        public void GetCurrent(IOwinContext context)
         {
             GetCurrentAsync(context).Wait();
         }
 
-        public async Task GetNeighboursAsync(HttpContext context)
+        public async Task GetNeighboursAsync(IOwinContext context)
         {
-            Guid id = Guid.Parse(context.Request.Query["Id"].First());
+            Guid id = Guid.Parse(context.Request.Query["Id"]);
             Dot dot = space.FindById(id);
 
             NeighboursResponse response = (dot != null)
@@ -140,14 +142,14 @@ namespace DioLive.Triangle.ServerCore
             await content.CopyToAsync(context.Response.Body);
         }
 
-        public void GetNeighbours(HttpContext context)
+        public void GetNeighbours(IOwinContext context)
         {
             GetNeighboursAsync(context).Wait();
         }
 
-        public async Task GetRadarAsync(HttpContext context)
+        public async Task GetRadarAsync(IOwinContext context)
         {
-            Guid id = Guid.Parse(context.Request.Query["Id"].First());
+            Guid id = Guid.Parse(context.Request.Query["Id"]);
             Dot dot = space.FindById(id);
 
             RadarResponse response = (dot != null)
@@ -158,29 +160,29 @@ namespace DioLive.Triangle.ServerCore
             await content.CopyToAsync(context.Response.Body);
         }
 
-        public void GetRadar(HttpContext context)
+        public void GetRadar(IOwinContext context)
         {
             GetRadarAsync(context).Wait();
         }
 
-        public void PostUpdate(HttpContext context)
+        public void PostUpdate(IOwinContext context)
         {
             var updateRequest = protocol.UpdateRequest.Read(context.Request.Body);
             requestPool.Add(updateRequest);
         }
 
-        public async Task PostUpdateAsync(HttpContext context)
+        public async Task PostUpdateAsync(IOwinContext context)
         {
             await Task.Run(() => PostUpdate(context));
         }
 
-        public void PostSignout(HttpContext context)
+        public void PostSignout(IOwinContext context)
         {
             var signoutRequest = protocol.SignoutRequest.Read(context.Request.Body);
             space.RemoveById(signoutRequest.Id);
         }
 
-        public async Task PostSignoutAsync(HttpContext context)
+        public async Task PostSignoutAsync(IOwinContext context)
         {
             await Task.Run(() => PostSignout(context));
         }

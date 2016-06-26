@@ -2,6 +2,8 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
+using DioLive.Triangle.Protocol;
+
 namespace DioLive.Triangle.Protocol.Binary
 {
     internal abstract class BinaryMessageEncoder<T> : IMessageEncoder<T>

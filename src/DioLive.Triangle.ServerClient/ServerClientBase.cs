@@ -24,7 +24,7 @@ namespace DioLive.Triangle.ServerClient
                 throw new InvalidOperationException("Client was already initialized before. Call .Signout() before");
             }
 
-            CreateResponse createResponse = await InitializeProtectedAsync();
+            CreateResponse createResponse = await InitializeProtectedAsync().ConfigureAwait(false);
 
             this.Id = createResponse.Id;
             this.Team = createResponse.Team;
@@ -41,12 +41,12 @@ namespace DioLive.Triangle.ServerClient
         public async Task<CurrentResponse> GetCurrentAsync()
         {
             EnsureInitialized();
-            return await GetCurrentProtectedAsync();
+            return await GetCurrentProtectedAsync().ConfigureAwait(false);
         }
 
         public async Task GetCurrentAsync(Action<CurrentResponse> action)
         {
-            var state = await GetCurrentAsync();
+            var state = await GetCurrentAsync().ConfigureAwait(false);
             action(state);
         }
 
@@ -60,12 +60,12 @@ namespace DioLive.Triangle.ServerClient
         public async Task<NeighboursResponse> GetNeighboursAsync()
         {
             EnsureInitialized();
-            return await GetNeighboursProtectedAsync();
+            return await GetNeighboursProtectedAsync().ConfigureAwait(false);
         }
 
         public async Task GetNeighboursAsync(Action<NeighboursResponse> action)
         {
-            var state = await GetNeighboursAsync();
+            var state = await GetNeighboursAsync().ConfigureAwait(false);
             action(state);
         }
 
@@ -79,12 +79,12 @@ namespace DioLive.Triangle.ServerClient
         public async Task<RadarResponse> GetRadarAsync()
         {
             EnsureInitialized();
-            return await GetRadarProtectedAsync();
+            return await GetRadarProtectedAsync().ConfigureAwait(false);
         }
 
         public async Task GetRadarAsync(Action<RadarResponse> action)
         {
-            var state = await GetRadarAsync();
+            var state = await GetRadarAsync().ConfigureAwait(false);
             action(state);
         }
 
@@ -96,7 +96,7 @@ namespace DioLive.Triangle.ServerClient
         public async Task UpdateAsync(byte moveDirection, byte? beamDirection = default(byte?))
         {
             EnsureInitialized();
-            await UpdateProtectedAsync(moveDirection, beamDirection);
+            await UpdateProtectedAsync(moveDirection, beamDirection).ConfigureAwait(false);
         }
 
         public void Signout()
@@ -107,7 +107,7 @@ namespace DioLive.Triangle.ServerClient
         public async Task SignoutAsync()
         {
             EnsureInitialized();
-            await SignoutProtectedAsync();
+            await SignoutProtectedAsync().ConfigureAwait(false);
             this.Initialized = false;
         }
 

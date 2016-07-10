@@ -6,12 +6,17 @@ namespace DioLive.Triangle.DataStorage
     public class Dot
     {
         public Dot(byte team, int x, int y)
+            : this(Guid.NewGuid(), team, x, y)
         {
-            this.Id = Guid.NewGuid();
-            this.Team = team;
-            this.X = x;
-            this.Y = y;
-            this.State = DotState.Alive;
+        }
+
+        public Dot(Guid id, byte team, int x, int y)
+        {
+            Id = id;
+            Team = team;
+            X = x;
+            Y = y;
+            State = DotState.Alive;
         }
 
         public Guid Id { get; }

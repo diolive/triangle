@@ -1,12 +1,10 @@
 ﻿using System;
 using System.IO;
-
 using DioLive.Common.Helpers;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DesktopClient.Configuration;
 using DioLive.Triangle.DesktopClient.GameObjects;
 using DioLive.Triangle.ServerClient;
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;

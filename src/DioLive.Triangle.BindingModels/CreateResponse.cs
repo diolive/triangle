@@ -8,8 +8,8 @@ namespace DioLive.Triangle.BindingModels
         [JsonConstructor]
         public CreateResponse(Guid id, byte team)
         {
-            this.Id = id;
-            this.Team = team;
+            Id = id;
+            Team = team;
         }
 
         public Guid Id { get; }

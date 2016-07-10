@@ -1,7 +1,6 @@
-﻿using DioLive.Common.Helpers;
-using DioLive.Triangle.BindingModels;
+﻿using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DesktopClient.Configuration;
-using DioLive.Triangle.ServerClient;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -9,11 +8,11 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
 {
     public class Radar : GameObjectBase
     {
-        private Rectangle bounds;
-        private Vector2 topLeft;
-        private float scale;
-        private Point dotSize;
-        private Vector2 dotOffset;
+        private readonly Rectangle bounds;
+        private readonly Vector2 topLeft;
+        private readonly float scale;
+        private readonly Point dotSize;
+        private readonly Vector2 dotOffset;
 
         private RadarResponse currentResponse;
         private ManualTimer updateTimer;

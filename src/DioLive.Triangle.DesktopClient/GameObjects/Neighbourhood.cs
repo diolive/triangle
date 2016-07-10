@@ -10,12 +10,12 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
 {
     public class Neighbourhood : GameObjectBase
     {
-        private Vector2 topLeft;
-        private float scale;
-        private Point dotSize;
-        private Vector2 dotOffset;
-        private Point beamSize;
-        private Vector2 beamOffset;
+        private readonly Vector2 topLeft;
+        private readonly float scale;
+        private readonly Point dotSize;
+        private readonly Vector2 dotOffset;
+        private readonly Point beamSize;
+        private readonly Vector2 beamOffset;
 
         private NeighboursResponse currentResponse;
         private ManualTimer updateTimer;

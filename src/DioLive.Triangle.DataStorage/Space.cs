@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using DioLive.Common.Helpers;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.Geometry;
@@ -41,7 +42,7 @@ namespace DioLive.Triangle.DataStorage
             var dot = FindById(id);
             if (dot != null)
             {
-                dots.Remove(dot);
+                this.dots.Remove(dot);
             }
         }
 
@@ -122,9 +123,6 @@ namespace DioLive.Triangle.DataStorage
             }
         }
 
-        public IEnumerable<Dot> GetAllDots()
-        {
-            return this.dots.ToList();
-        }
+        public IEnumerable<Dot> GetAllDots() => this.dots.ToList();
     }
 }

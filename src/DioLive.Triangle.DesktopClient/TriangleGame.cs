@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+
 using DioLive.Common.Helpers;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DesktopClient.Configuration;
 using DioLive.Triangle.DesktopClient.GameObjects;
-using DioLive.Triangle.ServerClient;
-using Microsoft.AspNet.SignalR.Client;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -41,10 +41,6 @@ namespace DioLive.Triangle.DesktopClient
         {
             this.graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = Path.Combine(Environment.CurrentDirectory, "Content");
-
-            ////const int V = (2 * (int)((float)Constants.UI.DotRadius * Constants.UI.NeighbourhoodSize / Constants.Space.Scope));
-            ////this.windowWidth = Constants.UI.NeighbourhoodSize + V + Constants.UI.RadarSize;
-            ////this.windowHeight = Constants.UI.NeighbourhoodSize + V;
 
             this.windowWidth = Constants.UI.NeighbourhoodSize + Constants.UI.RadarSize;
             this.windowHeight = Constants.UI.NeighbourhoodSize;
@@ -139,22 +135,12 @@ namespace DioLive.Triangle.DesktopClient
                 Exit();
             }
 
-            if (this.destroyed)
-            {
-                Window.Title = "Destroyed";
-                return;
-            }
-
-            if (this.current != null && !this.current.State.HasFlag(DotState.Alive))
+            if (this.destroyed || (this.current != null && !this.current.State.HasFlag(DotState.Alive)))
             {
                 return;
             }
 
             this.sendUpdateTimer += gameTime.ElapsedGameTime;
-            //this.getCurrentTimer += gameTime.ElapsedGameTime;
-
-            //this.neighbourhood.Update(gameTime);
-            //this.radar.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -172,7 +158,7 @@ namespace DioLive.Triangle.DesktopClient
                 return;
             }
 
-            if (!this.current.State.HasFlag(DotState.Alive))
+            if (this.destroyed || !this.current.State.HasFlag(DotState.Alive))
             {
                 Window.Title = "End";
                 return;

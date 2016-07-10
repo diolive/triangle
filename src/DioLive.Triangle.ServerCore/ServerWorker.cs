@@ -8,6 +8,7 @@ using DioLive.Triangle.DataStorage;
 using DioLive.Triangle.Protocol;
 
 using Microsoft.Owin;
+using Microsoft.AspNet.SignalR;
 
 namespace DioLive.Triangle.ServerCore
 {
@@ -22,6 +23,8 @@ namespace DioLive.Triangle.ServerCore
         private CancellationTokenSource cancellationTokenSource;
         private CancellationToken cancellationToken;
 
+        private IHubContext mainHub;
+
         public ServerWorker(RequestPool requestPool, Space space, Random random, IProtocol protocol)
         {
             this.requestPool = requestPool;
@@ -31,6 +34,8 @@ namespace DioLive.Triangle.ServerCore
 
             this.cancellationTokenSource = new CancellationTokenSource();
             this.cancellationToken = this.cancellationTokenSource.Token;
+
+            this.mainHub = GlobalHost.ConnectionManager.GetHubContext<MainHub>();
         }
 
         public void StartAutoUpdate()
@@ -50,6 +55,21 @@ namespace DioLive.Triangle.ServerCore
                         DateTime now = DateTime.UtcNow;
                         this.space.Update(now - checkPoint);
                         checkPoint = now;
+
+                        while (this.space.DestroyedDots.Count > 0)
+                        {
+                            Dot dot = this.space.DestroyedDots.Dequeue();
+                            dynamic client = this.mainHub.Clients.Client(dot.Id.ToString());
+                            client.OnDestroyed();
+                        }
+
+                        foreach (var dot in this.space.GetAllDots())
+                        {
+                            dynamic client = this.mainHub.Clients.Client(dot.Id.ToString());
+                            client.OnUpdateCurrent(new CurrentResponse(dot.State, dot.MoveDirection, dot.BeamDirection));
+                            client.OnUpdateNeighbours(new NeighboursResponse(this.space.GetNeighbours(dot.X, dot.Y).ToArray()));
+                            client.OnUpdateRadar(new RadarResponse(this.space.GetRadar(dot.Team, dot.X, dot.Y).ToArray()));
+                        }
                     }
                 },
                 this.cancellationToken);

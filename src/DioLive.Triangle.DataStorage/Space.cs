@@ -25,7 +25,10 @@ namespace DioLive.Triangle.DataStorage
         public Space()
         {
             this.dots = new HashSet<Dot>();
+            DestroyedDots = new Queue<Dot>();
         }
+
+        public Queue<Dot> DestroyedDots { get; }
 
         public void Add(Dot dot)
         {
@@ -120,6 +123,7 @@ namespace DioLive.Triangle.DataStorage
             {
                 dot.State = DotState.Destroyed;
                 this.dots.Remove(dot);
+                DestroyedDots.Enqueue(dot);
             }
         }
 

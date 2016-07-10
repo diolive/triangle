@@ -1,7 +1,6 @@
 ﻿using DioLive.Common.Helpers;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DesktopClient.Configuration;
-using DioLive.Triangle.ServerClient;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -17,15 +16,11 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
         private readonly Point beamSize;
         private readonly Vector2 beamOffset;
 
-        private NeighboursResponse currentResponse;
-        private ManualTimer updateTimer;
-        private IConfiguration configuration;
-        private ServerClientBase client;
+        private readonly IConfiguration configuration;
 
-        public Neighbourhood(IConfiguration configuration, ServerClientBase client)
+        public Neighbourhood(IConfiguration configuration)
         {
             this.configuration = configuration;
-            this.client = client;
 
             this.topLeft = Vector2.Zero;
             this.Bounds = new Rectangle(this.topLeft.ToPoint(), new Point(Constants.UI.NeighbourhoodSize));
@@ -34,28 +29,20 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
             this.beamSize = new Point(Constants.UI.BeamLength * Constants.UI.NeighbourhoodSize / Constants.Space.Scope, Constants.UI.BeamWidth * Constants.UI.NeighbourhoodSize / Constants.Space.Scope);
             this.beamOffset = new Vector2(0, Assets.BeamTexture.Height) / 2f;
             this.scale = (float)Constants.UI.NeighbourhoodSize / ushort.MaxValue;
-
-            this.updateTimer = new ManualTimer(Constants.Timers.GetNeighboursInterval);
-            this.updateTimer.Tick += (s, e) => { this.currentResponse = this.client.GetNeighbours(); };
         }
 
-        public override void Update(GameTime gameTime)
-        {
-            base.Update(gameTime);
-
-            this.updateTimer += gameTime.ElapsedGameTime;
-        }
+        public NeighboursResponse CurrentResponse { get; set; }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             base.Draw(spriteBatch);
 
-            if (this.currentResponse == null)
+            if (this.CurrentResponse == null)
             {
                 return;
             }
 
-            foreach (var dot in this.currentResponse.Neighbours)
+            foreach (var dot in this.CurrentResponse.Neighbours)
             {
                 if (dot.State.HasFlag(DotState.Beaming))
                 {

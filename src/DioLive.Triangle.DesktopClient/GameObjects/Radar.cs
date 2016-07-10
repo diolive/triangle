@@ -14,43 +14,31 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
         private readonly Point dotSize;
         private readonly Vector2 dotOffset;
 
-        private RadarResponse currentResponse;
-        private ManualTimer updateTimer;
-        private IConfiguration configuration;
-        private ServerClientBase client;
+        private readonly IConfiguration configuration;
 
-        public Radar(IConfiguration configuration, ServerClientBase client)
+        public Radar(IConfiguration configuration)
         {
             this.configuration = configuration;
-            this.client = client;
 
             this.topLeft = new Vector2(Constants.UI.NeighbourhoodSize, 0);
             this.bounds = new Rectangle(this.topLeft.ToPoint(), new Point(Constants.UI.RadarSize));
             this.dotSize = new Point(Constants.UI.RadarDotRadius);
             this.dotOffset = this.dotSize.ToVector2() / 2f;
             this.scale = (float)Constants.UI.RadarSize / byte.MaxValue;
-
-            this.updateTimer = new ManualTimer(Constants.Timers.GetRadarInterval);
-            this.updateTimer.Tick += (s, e) => { this.currentResponse = this.client.GetRadar(); };
         }
 
-        public override void Update(GameTime gameTime)
-        {
-            base.Update(gameTime);
-
-            this.updateTimer += gameTime.ElapsedGameTime;
-        }
+        public RadarResponse CurrentResponse { get; set; }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             base.Draw(spriteBatch);
 
-            if (this.currentResponse == null)
+            if (this.CurrentResponse == null)
             {
                 return;
             }
 
-            foreach (var dot in this.currentResponse.RadarDots)
+            foreach (var dot in this.CurrentResponse.RadarDots)
             {
                 this.DrawRadarPoint(spriteBatch, dot.RX, dot.RY, dot.Team);
             }

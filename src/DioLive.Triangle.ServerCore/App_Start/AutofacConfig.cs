@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Reflection;
+
 using Autofac;
 using Autofac.Integration.SignalR;
+
 using DioLive.Triangle.DataStorage;
-using DioLive.Triangle.Protocol;
-using DioLive.Triangle.Protocol.Binary;
 
 namespace DioLive.Triangle.ServerCore
 {
@@ -18,7 +18,6 @@ namespace DioLive.Triangle.ServerCore
             builder.RegisterType<Space>().AsSelf().SingleInstance();
             builder.RegisterType<Random>().AsSelf().SingleInstance();
             builder.RegisterType<ServerWorker>().AsSelf().SingleInstance();
-            builder.RegisterType<BinaryProtocol>().As<IProtocol>().SingleInstance();
 
             builder.RegisterHubs(Assembly.GetExecutingAssembly());
 

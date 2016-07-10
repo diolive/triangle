@@ -51,18 +51,6 @@
       <Project>{b91c810f-29b0-4793-9f39-f24ad7367ad4}</Project>
       <Name>DioLive.Triangle.BindingModels</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DioLive.Triangle.Protocol.Binary\DioLive.Triangle.Protocol.Binary.csproj">
-      <Project>{a894e42c-f324-4e4d-a9ea-0c2364f815e2}</Project>
-      <Name>DioLive.Triangle.Protocol.Binary</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DioLive.Triangle.Protocol.Json\DioLive.Triangle.Protocol.Json.csproj">
-      <Project>{545ba140-ea32-48ca-b904-c1d5cdfde0c5}</Project>
-      <Name>DioLive.Triangle.Protocol.Json</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DioLive.Triangle.Protocol\DioLive.Triangle.Protocol.csproj">
-      <Project>{7c2104bb-6e81-4df0-9ace-c1c762bc8510}</Project>
-      <Name>DioLive.Triangle.Protocol</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

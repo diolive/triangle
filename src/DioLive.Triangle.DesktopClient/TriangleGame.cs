@@ -30,8 +30,9 @@ namespace DioLive.Triangle.DesktopClient
 
         private ClientWorker clientWorker;
 
-        private CurrentResponse current;
         private bool destroyed;
+
+        private CurrentResponse current;
         private Neighbourhood neighbourhood;
         private Radar radar;
 

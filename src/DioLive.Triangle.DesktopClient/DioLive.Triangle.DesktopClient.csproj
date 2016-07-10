@@ -143,10 +143,6 @@
       <Project>{B91C810F-29B0-4793-9F39-F24AD7367AD4}</Project>
       <Name>DioLive.Triangle.BindingModels</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DioLive.Triangle.ServerClient\DioLive.Triangle.ServerClient.csproj">
-      <Project>{9B9E0E17-7CD2-43FF-848A-6DCBADB31798}</Project>
-      <Name>DioLive.Triangle.ServerClient</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

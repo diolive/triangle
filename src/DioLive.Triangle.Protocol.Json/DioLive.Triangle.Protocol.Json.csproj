@@ -53,10 +53,6 @@
       <Project>{b91c810f-29b0-4793-9f39-f24ad7367ad4}</Project>
       <Name>DioLive.Triangle.BindingModels</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DioLive.Triangle.Protocol\DioLive.Triangle.Protocol.csproj">
-      <Project>{7C2104BB-6E81-4DF0-9ACE-C1C762BC8510}</Project>
-      <Name>DioLive.Triangle.Protocol</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

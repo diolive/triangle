@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DataStorage;
-using DioLive.Triangle.Protocol;
 
 using Microsoft.Owin;
 using Microsoft.AspNet.SignalR;
@@ -18,19 +17,16 @@ namespace DioLive.Triangle.ServerCore
         private Space space;
         private Random random;
 
-        private IProtocol protocol;
-
         private CancellationTokenSource cancellationTokenSource;
         private CancellationToken cancellationToken;
 
         private IHubContext mainHub;
 
-        public ServerWorker(RequestPool requestPool, Space space, Random random, IProtocol protocol)
+        public ServerWorker(RequestPool requestPool, Space space, Random random)
         {
             this.requestPool = requestPool;
             this.space = space;
             this.random = random;
-            this.protocol = protocol;
 
             this.cancellationTokenSource = new CancellationTokenSource();
             this.cancellationToken = this.cancellationTokenSource.Token;
@@ -118,94 +114,96 @@ namespace DioLive.Triangle.ServerCore
             GetAdminAsync(context).Wait();
         }
 
-        public async Task PostCreateAsync(IOwinContext context)
-        {
-            Dot newDot = new Dot((byte)this.random.Next(0, 3), 0, 0);
-            this.space.Add(newDot);
-            var content = await this.protocol.CreateResponse.EncodeAsync(new CreateResponse(newDot.Id, newDot.Team));
-            await content.CopyToAsync(context.Response.Body);
-        }
+        #region Protocol usage
+        ////public async Task PostCreateAsync(IOwinContext context)
+        ////{
+        ////    Dot newDot = new Dot((byte)this.random.Next(0, 3), 0, 0);
+        ////    this.space.Add(newDot);
+        ////    var content = await this.protocol.CreateResponse.EncodeAsync(new CreateResponse(newDot.Id, newDot.Team));
+        ////    await content.CopyToAsync(context.Response.Body);
+        ////}
 
-        public void PostCreate(IOwinContext context)
-        {
-            PostCreateAsync(context).Wait();
-        }
+        ////public void PostCreate(IOwinContext context)
+        ////{
+        ////    PostCreateAsync(context).Wait();
+        ////}
 
-        public async Task GetCurrentAsync(IOwinContext context)
-        {
-            Guid id = Guid.Parse(context.Request.Query["Id"]);
-            Dot dot = this.space.FindById(id);
+        ////public async Task GetCurrentAsync(IOwinContext context)
+        ////{
+        ////    Guid id = Guid.Parse(context.Request.Query["Id"]);
+        ////    Dot dot = this.space.FindById(id);
 
-            CurrentResponse response = (dot != null)
-                ? new CurrentResponse(dot.State, dot.MoveDirection, dot.BeamDirection)
-                : CurrentResponse.Destroyed;
+        ////    CurrentResponse response = (dot != null)
+        ////        ? new CurrentResponse(dot.State, dot.MoveDirection, dot.BeamDirection)
+        ////        : CurrentResponse.Destroyed;
 
-            var content = await this.protocol.CurrentResponse.EncodeAsync(response);
-            await content.CopyToAsync(context.Response.Body);
-        }
+        ////    var content = await this.protocol.CurrentResponse.EncodeAsync(response);
+        ////    await content.CopyToAsync(context.Response.Body);
+        ////}
 
-        public void GetCurrent(IOwinContext context)
-        {
-            GetCurrentAsync(context).Wait();
-        }
+        ////public void GetCurrent(IOwinContext context)
+        ////{
+        ////    GetCurrentAsync(context).Wait();
+        ////}
 
-        public async Task GetNeighboursAsync(IOwinContext context)
-        {
-            Guid id = Guid.Parse(context.Request.Query["Id"]);
-            Dot dot = this.space.FindById(id);
+        ////public async Task GetNeighboursAsync(IOwinContext context)
+        ////{
+        ////    Guid id = Guid.Parse(context.Request.Query["Id"]);
+        ////    Dot dot = this.space.FindById(id);
 
-            NeighboursResponse response = (dot != null)
-                ? new NeighboursResponse(this.space.GetNeighbours(dot.X, dot.Y).ToArray())
-                : NeighboursResponse.None;
+        ////    NeighboursResponse response = (dot != null)
+        ////        ? new NeighboursResponse(this.space.GetNeighbours(dot.X, dot.Y).ToArray())
+        ////        : NeighboursResponse.None;
 
-            var content = await this.protocol.NeighboursResponse.EncodeAsync(response);
-            await content.CopyToAsync(context.Response.Body);
-        }
+        ////    var content = await this.protocol.NeighboursResponse.EncodeAsync(response);
+        ////    await content.CopyToAsync(context.Response.Body);
+        ////}
 
-        public void GetNeighbours(IOwinContext context)
-        {
-            GetNeighboursAsync(context).Wait();
-        }
+        ////public void GetNeighbours(IOwinContext context)
+        ////{
+        ////    GetNeighboursAsync(context).Wait();
+        ////}
 
-        public async Task GetRadarAsync(IOwinContext context)
-        {
-            Guid id = Guid.Parse(context.Request.Query["Id"]);
-            Dot dot = this.space.FindById(id);
+        ////public async Task GetRadarAsync(IOwinContext context)
+        ////{
+        ////    Guid id = Guid.Parse(context.Request.Query["Id"]);
+        ////    Dot dot = this.space.FindById(id);
 
-            RadarResponse response = (dot != null)
-                ? new RadarResponse(this.space.GetRadar(dot.Team, dot.X, dot.Y).ToArray())
-                : RadarResponse.None;
+        ////    RadarResponse response = (dot != null)
+        ////        ? new RadarResponse(this.space.GetRadar(dot.Team, dot.X, dot.Y).ToArray())
+        ////        : RadarResponse.None;
 
-            var content = await this.protocol.RadarResponse.EncodeAsync(response);
-            await content.CopyToAsync(context.Response.Body);
-        }
+        ////    var content = await this.protocol.RadarResponse.EncodeAsync(response);
+        ////    await content.CopyToAsync(context.Response.Body);
+        ////}
 
-        public void GetRadar(IOwinContext context)
-        {
-            GetRadarAsync(context).Wait();
-        }
+        ////public void GetRadar(IOwinContext context)
+        ////{
+        ////    GetRadarAsync(context).Wait();
+        ////}
 
-        public void PostUpdate(IOwinContext context)
-        {
-            var updateRequest = this.protocol.UpdateRequest.Read(context.Request.Body);
-            this.requestPool.Add(updateRequest);
-        }
+        ////public void PostUpdate(IOwinContext context)
+        ////{
+        ////    var updateRequest = this.protocol.UpdateRequest.Read(context.Request.Body);
+        ////    this.requestPool.Add(updateRequest);
+        ////}
 
-        public async Task PostUpdateAsync(IOwinContext context)
-        {
-            await Task.Run(() => PostUpdate(context));
-        }
+        ////public async Task PostUpdateAsync(IOwinContext context)
+        ////{
+        ////    await Task.Run(() => PostUpdate(context));
+        ////}
 
-        public void PostSignout(IOwinContext context)
-        {
-            var signoutRequest = this.protocol.SignoutRequest.Read(context.Request.Body);
-            this.space.RemoveById(signoutRequest.Id);
-        }
+        ////public void PostSignout(IOwinContext context)
+        ////{
+        ////    var signoutRequest = this.protocol.SignoutRequest.Read(context.Request.Body);
+        ////    this.space.RemoveById(signoutRequest.Id);
+        ////}
 
-        public async Task PostSignoutAsync(IOwinContext context)
-        {
-            await Task.Run(() => PostSignout(context));
-        }
+        ////public async Task PostSignoutAsync(IOwinContext context)
+        ////{
+        ////    await Task.Run(() => PostSignout(context));
+        ////} 
+        #endregion
 
         void IDisposable.Dispose()
         {

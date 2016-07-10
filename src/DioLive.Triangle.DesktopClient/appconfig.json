@@ -13,5 +13,5 @@
     ],
     "beam": "FFFFD700"
   },
-  "serverUri": "http://localhost:5000/"
+  "serverUri": "http://localhost:5000/signalr"
 }

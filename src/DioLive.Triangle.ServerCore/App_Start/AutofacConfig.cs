@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Reflection;
 using Autofac;
+using Autofac.Integration.SignalR;
 using DioLive.Triangle.DataStorage;
 using DioLive.Triangle.Protocol;
 using DioLive.Triangle.Protocol.Binary;
@@ -12,11 +14,13 @@ namespace DioLive.Triangle.ServerCore
         {
             var builder = new ContainerBuilder();
 
-            builder.RegisterType<RequestPool>().AsSelf().InstancePerLifetimeScope();
-            builder.RegisterType<Space>().AsSelf().InstancePerLifetimeScope();
-            builder.RegisterType<Random>().AsSelf().InstancePerLifetimeScope();
-            builder.RegisterType<ServerWorker>().AsSelf().InstancePerLifetimeScope();
-            builder.RegisterType<BinaryProtocol>().As<IProtocol>().InstancePerLifetimeScope();
+            builder.RegisterType<RequestPool>().AsSelf().SingleInstance();
+            builder.RegisterType<Space>().AsSelf().SingleInstance();
+            builder.RegisterType<Random>().AsSelf().SingleInstance();
+            builder.RegisterType<ServerWorker>().AsSelf().SingleInstance();
+            builder.RegisterType<BinaryProtocol>().As<IProtocol>().SingleInstance();
+
+            builder.RegisterHubs(Assembly.GetExecutingAssembly());
 
             return builder.Build();
         }

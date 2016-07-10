@@ -8,6 +8,7 @@ using DioLive.Triangle.DataStorage;
 using DioLive.Triangle.Protocol;
 
 using Microsoft.Owin;
+using Microsoft.AspNet.SignalR;
 
 namespace DioLive.Triangle.ServerCore
 {
@@ -22,6 +23,8 @@ namespace DioLive.Triangle.ServerCore
         private CancellationTokenSource cancellationTokenSource;
         private CancellationToken cancellationToken;
 
+        private IHubContext mainHub;
+
         public ServerWorker(RequestPool requestPool, Space space, Random random, IProtocol protocol)
         {
             this.requestPool = requestPool;
@@ -31,6 +34,8 @@ namespace DioLive.Triangle.ServerCore
 
             this.cancellationTokenSource = new CancellationTokenSource();
             this.cancellationToken = this.cancellationTokenSource.Token;
+
+            this.mainHub = GlobalHost.ConnectionManager.GetHubContext<MainHub>();
         }
 
         public void StartAutoUpdate()
@@ -42,14 +47,29 @@ namespace DioLive.Triangle.ServerCore
                     while (true)
                     {
                         await Task.Delay(TimeSpan.FromMilliseconds(40));
-                        if (cancellationToken.IsCancellationRequested)
+                        if (this.cancellationToken.IsCancellationRequested)
                         {
                             break;
                         }
 
                         DateTime now = DateTime.UtcNow;
-                        space.Update(now - checkPoint);
+                        this.space.Update(now - checkPoint);
                         checkPoint = now;
+
+                        while (this.space.DestroyedDots.Count > 0)
+                        {
+                            Dot dot = this.space.DestroyedDots.Dequeue();
+                            dynamic client = this.mainHub.Clients.Client(dot.Id.ToString());
+                            client.OnDestroyed();
+                        }
+
+                        foreach (var dot in this.space.GetAllDots())
+                        {
+                            dynamic client = this.mainHub.Clients.Client(dot.Id.ToString());
+                            client.OnUpdateCurrent(new CurrentResponse(dot.State, dot.MoveDirection, dot.BeamDirection));
+                            client.OnUpdateNeighbours(new NeighboursResponse(this.space.GetNeighbours(dot.X, dot.Y).ToArray()));
+                            client.OnUpdateRadar(new RadarResponse(this.space.GetRadar(dot.Team, dot.X, dot.Y).ToArray()));
+                        }
                     }
                 },
                 this.cancellationToken);
@@ -65,10 +85,10 @@ namespace DioLive.Triangle.ServerCore
             Task.Run(
                 () =>
                 {
-                    while (!requestPool.IsCompleted)
+                    while (!this.requestPool.IsCompleted)
                     {
-                        UpdateRequest request = requestPool.Take();
-                        Dot dot = space.FindById(request.Id);
+                        UpdateRequest request = this.requestPool.Take();
+                        Dot dot = this.space.FindById(request.Id);
                         dot.MoveDirection = request.MoveDirection;
                         dot.Velocity = Space.InitVelocity;
                         if (request.BeamDirection.HasValue)
@@ -102,7 +122,7 @@ namespace DioLive.Triangle.ServerCore
         {
             Dot newDot = new Dot((byte)this.random.Next(0, 3), 0, 0);
             this.space.Add(newDot);
-            var content = await protocol.CreateResponse.EncodeAsync(new CreateResponse(newDot.Id, newDot.Team));
+            var content = await this.protocol.CreateResponse.EncodeAsync(new CreateResponse(newDot.Id, newDot.Team));
             await content.CopyToAsync(context.Response.Body);
         }
 
@@ -114,13 +134,13 @@ namespace DioLive.Triangle.ServerCore
         public async Task GetCurrentAsync(IOwinContext context)
         {
             Guid id = Guid.Parse(context.Request.Query["Id"]);
-            Dot dot = space.FindById(id);
+            Dot dot = this.space.FindById(id);
 
             CurrentResponse response = (dot != null)
                 ? new CurrentResponse(dot.State, dot.MoveDirection, dot.BeamDirection)
                 : CurrentResponse.Destroyed;
 
-            var content = await protocol.CurrentResponse.EncodeAsync(response);
+            var content = await this.protocol.CurrentResponse.EncodeAsync(response);
             await content.CopyToAsync(context.Response.Body);
         }
 
@@ -132,13 +152,13 @@ namespace DioLive.Triangle.ServerCore
         public async Task GetNeighboursAsync(IOwinContext context)
         {
             Guid id = Guid.Parse(context.Request.Query["Id"]);
-            Dot dot = space.FindById(id);
+            Dot dot = this.space.FindById(id);
 
             NeighboursResponse response = (dot != null)
-                ? new NeighboursResponse(space.GetNeighbours(dot.X, dot.Y).ToArray())
+                ? new NeighboursResponse(this.space.GetNeighbours(dot.X, dot.Y).ToArray())
                 : NeighboursResponse.None;
 
-            var content = await protocol.NeighboursResponse.EncodeAsync(response);
+            var content = await this.protocol.NeighboursResponse.EncodeAsync(response);
             await content.CopyToAsync(context.Response.Body);
         }
 
@@ -150,13 +170,13 @@ namespace DioLive.Triangle.ServerCore
         public async Task GetRadarAsync(IOwinContext context)
         {
             Guid id = Guid.Parse(context.Request.Query["Id"]);
-            Dot dot = space.FindById(id);
+            Dot dot = this.space.FindById(id);
 
             RadarResponse response = (dot != null)
-                ? new RadarResponse(space.GetRadar(dot.Team, dot.X, dot.Y).ToArray())
+                ? new RadarResponse(this.space.GetRadar(dot.Team, dot.X, dot.Y).ToArray())
                 : RadarResponse.None;
 
-            var content = await protocol.RadarResponse.EncodeAsync(response);
+            var content = await this.protocol.RadarResponse.EncodeAsync(response);
             await content.CopyToAsync(context.Response.Body);
         }
 
@@ -167,8 +187,8 @@ namespace DioLive.Triangle.ServerCore
 
         public void PostUpdate(IOwinContext context)
         {
-            var updateRequest = protocol.UpdateRequest.Read(context.Request.Body);
-            requestPool.Add(updateRequest);
+            var updateRequest = this.protocol.UpdateRequest.Read(context.Request.Body);
+            this.requestPool.Add(updateRequest);
         }
 
         public async Task PostUpdateAsync(IOwinContext context)
@@ -178,8 +198,8 @@ namespace DioLive.Triangle.ServerCore
 
         public void PostSignout(IOwinContext context)
         {
-            var signoutRequest = protocol.SignoutRequest.Read(context.Request.Body);
-            space.RemoveById(signoutRequest.Id);
+            var signoutRequest = this.protocol.SignoutRequest.Read(context.Request.Body);
+            this.space.RemoveById(signoutRequest.Id);
         }
 
         public async Task PostSignoutAsync(IOwinContext context)
@@ -189,7 +209,7 @@ namespace DioLive.Triangle.ServerCore
 
         void IDisposable.Dispose()
         {
-            this.StopAutoUpdate();
+            StopAutoUpdate();
         }
     }
 }

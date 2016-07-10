@@ -1,4 +1,6 @@
 ﻿using Autofac;
+using Autofac.Integration.SignalR;
+using Microsoft.AspNet.SignalR;
 using Microsoft.Owin;
 using Owin;
 
@@ -12,10 +14,13 @@ namespace DioLive.Triangle.ServerCore
         {
             var container = AutofacConfig.ConfigureContainer();
             app.UseAutofacMiddleware(container);
+            GlobalHost.DependencyResolver = new AutofacDependencyResolver(container);
 
             var scope = container.BeginLifetimeScope();
 
             ServerWorker serverWorker = scope.Resolve<ServerWorker>();
+
+            app.MapSignalR();
 
             app.MapGet("/admin", cfg => cfg.Run(serverWorker.GetAdminAsync));
             app.MapPost("/create", cfg => cfg.Run(serverWorker.PostCreateAsync));
@@ -26,7 +31,7 @@ namespace DioLive.Triangle.ServerCore
             app.MapPost("/signout", cfg => cfg.Run(serverWorker.PostSignoutAsync));
 
             serverWorker.StartAutoUpdate();
-            serverWorker.UtilizeRequestPool();
+            //serverWorker.UtilizeRequestPool();
 
             app.Run(async (context) =>
             {

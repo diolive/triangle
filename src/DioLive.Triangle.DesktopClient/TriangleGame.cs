@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 using DioLive.Common.Helpers;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DesktopClient.Configuration;
 using DioLive.Triangle.DesktopClient.GameObjects;
-using DioLive.Triangle.ServerClient;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -28,28 +28,28 @@ namespace DioLive.Triangle.DesktopClient
 
         private Rectangle windowBounds;
 
-        private ServerClientBase client;
+        private ClientWorker clientWorker;
 
         private CurrentResponse current;
-
-        private ManualTimer sendUpdateTimer;
-        private ManualTimer getCurrentTimer;
-
+        private bool destroyed;
         private Neighbourhood neighbourhood;
         private Radar radar;
+
+        private ManualTimer sendUpdateTimer;
 
         public TriangleGame()
         {
             this.graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = Path.Combine(Environment.CurrentDirectory, "Content");
 
-            this.windowWidth = Constants.UI.NeighbourhoodSize + (2 * (int)((float)Constants.UI.DotRadius * Constants.UI.NeighbourhoodSize / Constants.Space.Scope)) + Constants.UI.RadarSize;
-            this.windowHeight = Constants.UI.NeighbourhoodSize + (2 * (int)((float)Constants.UI.DotRadius * Constants.UI.NeighbourhoodSize / Constants.Space.Scope));
+            this.windowWidth = Constants.UI.NeighbourhoodSize + Constants.UI.RadarSize;
+            this.windowHeight = Constants.UI.NeighbourhoodSize;
 
-            graphics.PreferredBackBufferWidth = this.windowWidth;
-            graphics.PreferredBackBufferHeight = this.windowHeight;
+            this.graphics.PreferredBackBufferWidth = this.windowWidth;
+            this.graphics.PreferredBackBufferHeight = this.windowHeight;
 
-            this.IsMouseVisible = true;
+            Window.Title = "Triangle";
+            IsMouseVisible = true;
         }
 
         /// <summary>
@@ -60,7 +60,6 @@ namespace DioLive.Triangle.DesktopClient
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
             var viewport = GraphicsDevice.Viewport;
             this.windowBounds = new Rectangle(0, 0, this.windowWidth, this.windowHeight);
 
@@ -76,19 +75,13 @@ namespace DioLive.Triangle.DesktopClient
 
                     if (mouseState.LeftButton == ButtonState.Pressed)
                     {
-                        this.client.Update(direction, direction);
+                        this.clientWorker.UpdateAsync(direction, direction).AsSync();
                     }
                     else
                     {
-                        this.client.Update(direction);
+                        this.clientWorker.UpdateAsync(direction).AsSync();
                     }
                 }
-            };
-
-            this.getCurrentTimer = new ManualTimer(Constants.Timers.GetCurrentInterval);
-            this.getCurrentTimer.Tick += (s, e) =>
-            {
-                this.current = client.GetCurrent();
             };
 
             base.Initialize();
@@ -100,17 +93,26 @@ namespace DioLive.Triangle.DesktopClient
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            this.spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
             this.configuration = ConfigurationLoader.Load("appconfig.json");
-            this.client = new BinaryServerClient(new Uri(this.configuration.ServerUri));
 
-            Assets.Load(this.Content);
+            Assets.Load(Content);
 
-            this.neighbourhood = new Neighbourhood(this.configuration, this.client);
-            this.radar = new Radar(this.configuration, this.client);
+            this.neighbourhood = new Neighbourhood(this.configuration);
+            this.radar = new Radar(this.configuration);
+
+            this.clientWorker = new ClientWorker(this.configuration.ServerUri);
+
+            this.clientWorker.UpdateCurrent += response => this.current = response;
+            this.clientWorker.UpdateNeighbours += response => this.neighbourhood.CurrentResponse = response;
+            this.clientWorker.UpdateRadar += response => this.radar.CurrentResponse = response;
+            this.clientWorker.Destroyed += () =>
+            {
+                this.destroyed = true;
+            };
+
+            this.clientWorker.ActivateAsync().AsSync();
         }
 
         /// <summary>
@@ -119,7 +121,6 @@ namespace DioLive.Triangle.DesktopClient
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
         }
 
         /// <summary>
@@ -134,16 +135,12 @@ namespace DioLive.Triangle.DesktopClient
                 Exit();
             }
 
-            if (this.current != null && !this.current.State.HasFlag(DotState.Alive))
+            if (this.destroyed || (this.current != null && !this.current.State.HasFlag(DotState.Alive)))
             {
                 return;
             }
 
             this.sendUpdateTimer += gameTime.ElapsedGameTime;
-            this.getCurrentTimer += gameTime.ElapsedGameTime;
-
-            this.neighbourhood.Update(gameTime);
-            this.radar.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -161,20 +158,18 @@ namespace DioLive.Triangle.DesktopClient
                 return;
             }
 
-            spriteBatch.Begin();
-
-            if (this.current.State.HasFlag(DotState.Alive))
-            {
-                this.neighbourhood.Draw(spriteBatch);
-            }
-            else
+            if (this.destroyed || !this.current.State.HasFlag(DotState.Alive))
             {
                 Window.Title = "End";
+                return;
             }
 
-            this.radar.Draw(spriteBatch);
+            this.spriteBatch.Begin();
 
-            spriteBatch.End();
+            this.neighbourhood.Draw(this.spriteBatch);
+            this.radar.Draw(this.spriteBatch);
+
+            this.spriteBatch.End();
 
             base.Draw(gameTime);
         }
@@ -184,7 +179,7 @@ namespace DioLive.Triangle.DesktopClient
             base.Dispose(disposing);
             if (disposing)
             {
-                this.client.Dispose();
+                this.clientWorker.Dispose();
             }
         }
     }

@@ -7,9 +7,9 @@ namespace DioLive.Triangle.BindingModels
         [JsonConstructor]
         public RadarDot(byte team, byte rx, byte ry)
         {
-            this.Team = team;
-            this.RX = rx;
-            this.RY = ry;
+            Team = team;
+            RX = rx;
+            RY = ry;
         }
 
         public byte Team { get; }

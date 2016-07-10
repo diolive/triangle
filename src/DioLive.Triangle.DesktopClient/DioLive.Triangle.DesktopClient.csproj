@@ -75,6 +75,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Assets.cs" />
+    <Compile Include="ClientWorker.cs" />
     <Compile Include="Configuration\ColorsAdapter.cs" />
     <Compile Include="Configuration\ColorsSection.cs" />
     <Compile Include="Configuration\ConfigurationAdapter.cs" />
@@ -91,11 +92,15 @@
     <Compile Include="XnaHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.AspNet.SignalR.Client, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.AspNet.SignalR.Client.2.2.0\lib\net45\Microsoft.AspNet.SignalR.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\Windows\MonoGame.Framework.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -126,6 +131,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DioLive.Common.Extensions\DioLive.Common.Extensions.csproj">
+      <Project>{392b6c6b-b1f0-4baa-af47-1ca185c4d6ab}</Project>
+      <Name>DioLive.Common.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DioLive.Common.Helpers\DioLive.Common.Helpers.csproj">
       <Project>{5215A30F-53FC-43A4-9B20-7E609A60560E}</Project>
       <Name>DioLive.Common.Helpers</Name>

@@ -38,11 +38,6 @@ namespace DioLive.Triangle.ServerCore
             return base.OnDisconnected(stopCalled);
         }
 
-        public void Hello()
-        {
-            Clients.All.hello();
-        }
-
         public void Update(UpdateRequest request)
         {
             Dot dot = this.space.FindById(request.Id);

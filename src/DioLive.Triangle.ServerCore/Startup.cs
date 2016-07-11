@@ -25,12 +25,6 @@ namespace DioLive.Triangle.ServerCore
             app.MapSignalR();
 
             app.MapGet("/admin", cfg => cfg.Run(serverWorker.GetAdminAsync));
-            ////app.MapPost("/create", cfg => cfg.Run(serverWorker.PostCreateAsync));
-            ////app.MapGet("/current", cfg => cfg.Run(serverWorker.GetCurrentAsync));
-            ////app.MapGet("/neighbours", cfg => cfg.Run(serverWorker.GetNeighboursAsync));
-            ////app.MapGet("/radar", cfg => cfg.Run(serverWorker.GetRadarAsync));
-            ////app.MapPost("/update", cfg => cfg.Run(serverWorker.PostUpdateAsync));
-            ////app.MapPost("/signout", cfg => cfg.Run(serverWorker.PostSignoutAsync));
 
             serverWorker.StartAutoUpdate();
             ////serverWorker.UtilizeRequestPool();

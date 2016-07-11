@@ -96,7 +96,11 @@ namespace DioLive.Triangle.DesktopClient
         {
             this.spriteBatch = new SpriteBatch(GraphicsDevice);
 
+#if DEBUG
             this.configuration = ConfigurationLoader.Load("appconfig.json");
+#else
+            this.configuration = ConfigurationLoader.Load("appconfig.json", "appconfig.release.json");
+#endif
 
             Assets.Load(Content);
 

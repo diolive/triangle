@@ -27,7 +27,7 @@ namespace DioLive.Triangle.ServerCore
             app.MapGet("/admin", cfg => cfg.Run(serverWorker.GetAdminAsync));
 
             serverWorker.StartAutoUpdate();
-            ////serverWorker.UtilizeRequestPool();
+            serverWorker.UtilizeRequestPool();
 
             app.Run(async (context) =>
             {

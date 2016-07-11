@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace DioLive.Triangle.ServerCore
         private CancellationToken cancellationToken;
 
         private IHubContext mainHub;
+        private Dictionary<Guid, dynamic> clients;
 
         public ServerWorker(RequestPool requestPool, Space space, Random random)
         {
@@ -32,6 +34,7 @@ namespace DioLive.Triangle.ServerCore
             this.cancellationToken = this.cancellationTokenSource.Token;
 
             this.mainHub = GlobalHost.ConnectionManager.GetHubContext<MainHub>();
+            this.clients = new Dictionary<Guid, dynamic>();
         }
 
         public void StartAutoUpdate()
@@ -55,13 +58,14 @@ namespace DioLive.Triangle.ServerCore
                         while (this.space.DestroyedDots.Count > 0)
                         {
                             Dot dot = this.space.DestroyedDots.Dequeue();
-                            dynamic client = this.mainHub.Clients.Client(dot.Id.ToString());
+                            dynamic client = GetClient(dot.Id);
                             client.OnDestroyed();
+                            this.clients.Remove(dot.Id);
                         }
 
                         foreach (var dot in this.space.GetAllDots())
                         {
-                            dynamic client = this.mainHub.Clients.Client(dot.Id.ToString());
+                            dynamic client = GetClient(dot.Id);
                             client.OnUpdateCurrent(new CurrentResponse(dot.State, dot.MoveDirection, dot.BeamDirection));
                             client.OnUpdateNeighbours(new NeighboursResponse(this.space.GetNeighbours(dot.X, dot.Y).ToArray()));
                             client.OnUpdateRadar(new RadarResponse(this.space.GetRadar(dot.Team, dot.X, dot.Y).ToArray()));
@@ -114,6 +118,15 @@ namespace DioLive.Triangle.ServerCore
             GetAdminAsync(context).Wait();
         }
 
+        private dynamic GetClient(Guid id)
+        {
+            if (!this.clients.ContainsKey(id))
+            {
+                this.clients[id] = this.mainHub.Clients.Client(id.ToString());
+            }
+
+            return this.clients[id];
+        }
 
         void IDisposable.Dispose()
         {

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DataStorage;
 
-using Microsoft.Owin;
 using Microsoft.AspNet.SignalR;
+using Microsoft.Owin;
 
 namespace DioLive.Triangle.ServerCore
 {

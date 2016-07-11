@@ -10,15 +10,9 @@ namespace DioLive.Triangle.DesktopClient
     internal class ClientWorker : IDisposable
     {
         private HubConnection hubConnection;
-        private IHubProxy mainHubProxy;
-
         private Guid id;
+        private IHubProxy mainHubProxy;
         private byte team;
-
-        public event Action<CurrentResponse> UpdateCurrent;
-        public event Action<NeighboursResponse> UpdateNeighbours;
-        public event Action<RadarResponse> UpdateRadar;
-        public event Action Destroyed;
 
         public ClientWorker(string url)
         {
@@ -26,21 +20,29 @@ namespace DioLive.Triangle.DesktopClient
 
             this.mainHubProxy = this.hubConnection.CreateHubProxy("main");
 
-            this.mainHubProxy.On<CreateResponse>("OnCreate", createResponse =>
-            {
-                this.id = createResponse.Id;
-                this.team = createResponse.Team;
-            });
-
-            this.mainHubProxy.On<CurrentResponse>("OnUpdateCurrent", r => UpdateCurrent?.Invoke(r));
-            this.mainHubProxy.On<NeighboursResponse>("OnUpdateNeighbours", r => UpdateNeighbours?.Invoke(r));
-            this.mainHubProxy.On<RadarResponse>("OnUpdateRadar", r => UpdateRadar?.Invoke(r));
-            this.mainHubProxy.On("OnDestroyed", () => Destroyed?.Invoke());
+            this.mainHubProxy.On<CreateResponse>("OnCreate", OnCreate);
+            this.mainHubProxy.On<CurrentResponse>("OnUpdateCurrent", OnUpdateCurrent);
+            this.mainHubProxy.On<NeighboursResponse>("OnUpdateNeighbours", OnUpdateNeighbours);
+            this.mainHubProxy.On<RadarResponse>("OnUpdateRadar", OnUpdateRadar);
+            this.mainHubProxy.On("OnDestroyed", OnDestroyed);
         }
+
+        public event Action Destroyed;
+
+        public event Action<CurrentResponse> UpdateCurrent;
+
+        public event Action<NeighboursResponse> UpdateNeighbours;
+
+        public event Action<RadarResponse> UpdateRadar;
 
         public async Task ActivateAsync()
         {
             await this.hubConnection.Start().ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            this.hubConnection.Dispose();
         }
 
         public async Task UpdateAsync(byte moveDirection, byte beamDirection)
@@ -53,9 +55,30 @@ namespace DioLive.Triangle.DesktopClient
             await this.mainHubProxy.Invoke("Update", new UpdateRequest(this.id, moveDirection, default(byte?))).ConfigureAwait(false);
         }
 
-        public void Dispose()
+        private void OnCreate(CreateResponse createResponse)
         {
-            this.hubConnection.Dispose();
+            this.id = createResponse.Id;
+            this.team = createResponse.Team;
+        }
+
+        private void OnDestroyed()
+        {
+            Destroyed?.Invoke();
+        }
+
+        private void OnUpdateCurrent(CurrentResponse currentResponse)
+        {
+            UpdateCurrent?.Invoke(currentResponse);
+        }
+
+        private void OnUpdateNeighbours(NeighboursResponse neighboursResponse)
+        {
+            UpdateNeighbours?.Invoke(neighboursResponse);
+        }
+
+        private void OnUpdateRadar(RadarResponse radarResponse)
+        {
+            UpdateRadar?.Invoke(radarResponse);
         }
     }
 }

@@ -68,6 +68,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -79,6 +80,7 @@
     <Compile Include="Configuration\ColorsAdapter.cs" />
     <Compile Include="Configuration\ColorsSection.cs" />
     <Compile Include="Configuration\ConfigurationAdapter.cs" />
+    <Compile Include="Configuration\ConfigurationException.cs" />
     <Compile Include="Configuration\ConfigurationLoader.cs" />
     <Compile Include="Configuration\DefaultConfiguration.cs" />
     <Compile Include="Configuration\IConfiguration.cs" />
@@ -121,6 +123,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="OpenTK.dll.config" />
+    <Content Include="appconfig.release.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -142,10 +147,6 @@
     <ProjectReference Include="..\DioLive.Triangle.BindingModels\DioLive.Triangle.BindingModels.csproj">
       <Project>{B91C810F-29B0-4793-9F39-F24AD7367AD4}</Project>
       <Name>DioLive.Triangle.BindingModels</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DioLive.Triangle.ServerClient\DioLive.Triangle.ServerClient.csproj">
-      <Project>{9B9E0E17-7CD2-43FF-848A-6DCBADB31798}</Project>
-      <Name>DioLive.Triangle.ServerClient</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

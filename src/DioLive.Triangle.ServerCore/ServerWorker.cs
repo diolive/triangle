@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using DioLive.Triangle.BindingModels;
 using DioLive.Triangle.DataStorage;
-using DioLive.Triangle.Protocol;
 
-using Microsoft.Owin;
 using Microsoft.AspNet.SignalR;
+using Microsoft.Owin;
 
 namespace DioLive.Triangle.ServerCore
 {
@@ -18,24 +18,23 @@ namespace DioLive.Triangle.ServerCore
         private Space space;
         private Random random;
 
-        private IProtocol protocol;
-
         private CancellationTokenSource cancellationTokenSource;
         private CancellationToken cancellationToken;
 
         private IHubContext mainHub;
+        private Dictionary<Guid, dynamic> clients;
 
-        public ServerWorker(RequestPool requestPool, Space space, Random random, IProtocol protocol)
+        public ServerWorker(RequestPool requestPool, Space space, Random random)
         {
             this.requestPool = requestPool;
             this.space = space;
             this.random = random;
-            this.protocol = protocol;
 
             this.cancellationTokenSource = new CancellationTokenSource();
             this.cancellationToken = this.cancellationTokenSource.Token;
 
             this.mainHub = GlobalHost.ConnectionManager.GetHubContext<MainHub>();
+            this.clients = new Dictionary<Guid, dynamic>();
         }
 
         public void StartAutoUpdate()
@@ -59,13 +58,14 @@ namespace DioLive.Triangle.ServerCore
                         while (this.space.DestroyedDots.Count > 0)
                         {
                             Dot dot = this.space.DestroyedDots.Dequeue();
-                            dynamic client = this.mainHub.Clients.Client(dot.Id.ToString());
+                            dynamic client = GetClient(dot.Id);
                             client.OnDestroyed();
+                            this.clients.Remove(dot.Id);
                         }
 
                         foreach (var dot in this.space.GetAllDots())
                         {
-                            dynamic client = this.mainHub.Clients.Client(dot.Id.ToString());
+                            dynamic client = GetClient(dot.Id);
                             client.OnUpdateCurrent(new CurrentResponse(dot.State, dot.MoveDirection, dot.BeamDirection));
                             client.OnUpdateNeighbours(new NeighboursResponse(this.space.GetNeighbours(dot.X, dot.Y).ToArray()));
                             client.OnUpdateRadar(new RadarResponse(this.space.GetRadar(dot.Team, dot.X, dot.Y).ToArray()));
@@ -118,93 +118,14 @@ namespace DioLive.Triangle.ServerCore
             GetAdminAsync(context).Wait();
         }
 
-        public async Task PostCreateAsync(IOwinContext context)
+        private dynamic GetClient(Guid id)
         {
-            Dot newDot = new Dot((byte)this.random.Next(0, 3), 0, 0);
-            this.space.Add(newDot);
-            var content = await this.protocol.CreateResponse.EncodeAsync(new CreateResponse(newDot.Id, newDot.Team));
-            await content.CopyToAsync(context.Response.Body);
-        }
+            if (!this.clients.ContainsKey(id))
+            {
+                this.clients[id] = this.mainHub.Clients.Client(id.ToString());
+            }
 
-        public void PostCreate(IOwinContext context)
-        {
-            PostCreateAsync(context).Wait();
-        }
-
-        public async Task GetCurrentAsync(IOwinContext context)
-        {
-            Guid id = Guid.Parse(context.Request.Query["Id"]);
-            Dot dot = this.space.FindById(id);
-
-            CurrentResponse response = (dot != null)
-                ? new CurrentResponse(dot.State, dot.MoveDirection, dot.BeamDirection)
-                : CurrentResponse.Destroyed;
-
-            var content = await this.protocol.CurrentResponse.EncodeAsync(response);
-            await content.CopyToAsync(context.Response.Body);
-        }
-
-        public void GetCurrent(IOwinContext context)
-        {
-            GetCurrentAsync(context).Wait();
-        }
-
-        public async Task GetNeighboursAsync(IOwinContext context)
-        {
-            Guid id = Guid.Parse(context.Request.Query["Id"]);
-            Dot dot = this.space.FindById(id);
-
-            NeighboursResponse response = (dot != null)
-                ? new NeighboursResponse(this.space.GetNeighbours(dot.X, dot.Y).ToArray())
-                : NeighboursResponse.None;
-
-            var content = await this.protocol.NeighboursResponse.EncodeAsync(response);
-            await content.CopyToAsync(context.Response.Body);
-        }
-
-        public void GetNeighbours(IOwinContext context)
-        {
-            GetNeighboursAsync(context).Wait();
-        }
-
-        public async Task GetRadarAsync(IOwinContext context)
-        {
-            Guid id = Guid.Parse(context.Request.Query["Id"]);
-            Dot dot = this.space.FindById(id);
-
-            RadarResponse response = (dot != null)
-                ? new RadarResponse(this.space.GetRadar(dot.Team, dot.X, dot.Y).ToArray())
-                : RadarResponse.None;
-
-            var content = await this.protocol.RadarResponse.EncodeAsync(response);
-            await content.CopyToAsync(context.Response.Body);
-        }
-
-        public void GetRadar(IOwinContext context)
-        {
-            GetRadarAsync(context).Wait();
-        }
-
-        public void PostUpdate(IOwinContext context)
-        {
-            var updateRequest = this.protocol.UpdateRequest.Read(context.Request.Body);
-            this.requestPool.Add(updateRequest);
-        }
-
-        public async Task PostUpdateAsync(IOwinContext context)
-        {
-            await Task.Run(() => PostUpdate(context));
-        }
-
-        public void PostSignout(IOwinContext context)
-        {
-            var signoutRequest = this.protocol.SignoutRequest.Read(context.Request.Body);
-            this.space.RemoveById(signoutRequest.Id);
-        }
-
-        public async Task PostSignoutAsync(IOwinContext context)
-        {
-            await Task.Run(() => PostSignout(context));
+            return this.clients[id];
         }
 
         void IDisposable.Dispose()

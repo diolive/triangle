@@ -30,8 +30,9 @@ namespace DioLive.Triangle.DesktopClient
 
         private ClientWorker clientWorker;
 
-        private CurrentResponse current;
         private bool destroyed;
+
+        private CurrentResponse current;
         private Neighbourhood neighbourhood;
         private Radar radar;
 
@@ -95,7 +96,11 @@ namespace DioLive.Triangle.DesktopClient
         {
             this.spriteBatch = new SpriteBatch(GraphicsDevice);
 
+#if DEBUG
             this.configuration = ConfigurationLoader.Load("appconfig.json");
+#else
+            this.configuration = ConfigurationLoader.Load("appconfig.json", "appconfig.release.json");
+#endif
 
             Assets.Load(Content);
 

@@ -12,12 +12,14 @@ namespace DioLive.Triangle.ServerCore
     public class MainHub : Hub
     {
         private ILifetimeScope lifetimeScope;
+        private RequestPool requestPool;
         private Random random;
         private Space space;
 
         public MainHub(ILifetimeScope lifetimeScope)
         {
             this.lifetimeScope = lifetimeScope.BeginLifetimeScope();
+            this.requestPool = lifetimeScope.Resolve<RequestPool>();
             this.random = lifetimeScope.Resolve<Random>();
             this.space = lifetimeScope.Resolve<Space>();
         }
@@ -38,31 +40,9 @@ namespace DioLive.Triangle.ServerCore
             return base.OnDisconnected(stopCalled);
         }
 
-        public void Hello()
-        {
-            Clients.All.hello();
-        }
-
         public void Update(UpdateRequest request)
         {
-            Dot dot = this.space.FindById(request.Id);
-            if (dot == null)
-            {
-                return;
-            }
-
-            dot.MoveDirection = request.MoveDirection;
-            dot.Velocity = Space.InitVelocity;
-            if (request.BeamDirection.HasValue)
-            {
-                dot.BeamDirection = request.BeamDirection.Value;
-                dot.State |= DotState.Beaming;
-            }
-            else
-            {
-                dot.BeamDirection = default(byte);
-                dot.State &= ~DotState.Beaming;
-            }
+            this.requestPool.Add(request);
         }
 
         protected override void Dispose(bool disposing)

@@ -186,14 +186,6 @@
       <Project>{2ca73c3c-b4f9-4ec5-a7ea-15decd4cd819}</Project>
       <Name>DioLive.Triangle.DataStorage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DioLive.Triangle.Protocol.Binary\DioLive.Triangle.Protocol.Binary.csproj">
-      <Project>{A894E42C-F324-4E4D-A9EA-0C2364F815E2}</Project>
-      <Name>DioLive.Triangle.Protocol.Binary</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DioLive.Triangle.Protocol\DioLive.Triangle.Protocol.csproj">
-      <Project>{7c2104bb-6e81-4df0-9ace-c1c762bc8510}</Project>
-      <Name>DioLive.Triangle.Protocol</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DioLive.Triangle.DesktopClient\DioLive.Triangle.DesktopClient.csproj">
       <Project>{812BE082-557C-4C42-96DD-E3DF7D36478B}</Project>
       <Name>DioLive.Triangle.DesktopClient</Name>

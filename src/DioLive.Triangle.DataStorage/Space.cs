@@ -127,6 +127,23 @@ namespace DioLive.Triangle.DataStorage
             }
         }
 
+        public void ProcessUpdateRequest(UpdateRequest request)
+        {
+            Dot dot = FindById(request.Id);
+            dot.MoveDirection = request.MoveDirection;
+            dot.Velocity = InitVelocity;
+            if (request.BeamDirection.HasValue)
+            {
+                dot.BeamDirection = request.BeamDirection.Value;
+                dot.State |= DotState.Beaming;
+            }
+            else
+            {
+                dot.BeamDirection = default(byte);
+                dot.State &= ~DotState.Beaming;
+            }
+        }
+
         public IEnumerable<Dot> GetAllDots() => this.dots.ToList();
     }
 }

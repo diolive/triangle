@@ -25,7 +25,7 @@ namespace DioLive.Triangle.ServerCore
             app.MapSignalR();
 
             serverWorker.StartAutoUpdate();
-            serverWorker.UtilizeRequestPool();
+            //serverWorker.UtilizeRequestPool();
 
             app.Run(async (context) =>
             {

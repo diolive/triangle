@@ -87,20 +87,7 @@ namespace DioLive.Triangle.ServerCore
                 {
                     while (!this.requestPool.IsCompleted)
                     {
-                        UpdateRequest request = this.requestPool.Take();
-                        Dot dot = this.space.FindById(request.Id);
-                        dot.MoveDirection = request.MoveDirection;
-                        dot.Velocity = Space.InitVelocity;
-                        if (request.BeamDirection.HasValue)
-                        {
-                            dot.BeamDirection = request.BeamDirection.Value;
-                            dot.State |= DotState.Beaming;
-                        }
-                        else
-                        {
-                            dot.BeamDirection = default(byte);
-                            dot.State &= ~DotState.Beaming;
-                        }
+                        this.space.ProcessUpdateRequest(this.requestPool.Take());
                     }
                 },
                 this.cancellationToken);

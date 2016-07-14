@@ -42,7 +42,8 @@ namespace DioLive.Triangle.ServerCore
 
         public void Update(UpdateRequest request)
         {
-            this.requestPool.Add(request);
+            //this.requestPool.Add(request);
+            this.space.ProcessUpdateRequest(request);
         }
 
         protected override void Dispose(bool disposing)

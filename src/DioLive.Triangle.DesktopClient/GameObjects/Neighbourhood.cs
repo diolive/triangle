@@ -23,7 +23,7 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
             this.configuration = configuration;
 
             this.topLeft = Vector2.Zero;
-            this.Bounds = new Rectangle(this.topLeft.ToPoint(), new Point(Constants.UI.NeighbourhoodSize));
+            Bounds = new Rectangle(this.topLeft.ToPoint(), new Point(Constants.UI.NeighbourhoodSize));
             this.dotSize = new Point(2 * Constants.UI.DotRadius * Constants.UI.NeighbourhoodSize / Constants.Space.Scope);
             this.dotOffset = this.dotSize.ToVector2() / 2f;
             this.beamSize = new Point(Constants.UI.BeamLength * Constants.UI.NeighbourhoodSize / Constants.Space.Scope, Constants.UI.BeamWidth * Constants.UI.NeighbourhoodSize / Constants.Space.Scope);
@@ -37,25 +37,25 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
         {
             base.Draw(spriteBatch);
 
-            if (this.CurrentResponse == null)
+            if (CurrentResponse == null)
             {
                 return;
             }
 
-            foreach (var dot in this.CurrentResponse.Neighbours)
+            foreach (var dot in CurrentResponse.Neighbours)
             {
                 if (dot.State.HasFlag(DotState.Beaming))
                 {
-                    this.DrawBeam(spriteBatch, dot.RX, dot.RY, dot.BeamDirection);
+                    DrawBeam(spriteBatch, dot.RX, dot.RY, dot.BeamDirection);
                 }
 
-                this.DrawDot(spriteBatch, dot);
+                DrawDot(spriteBatch, dot);
             }
         }
 
         private void DrawBeam(SpriteBatch spriteBatch, ushort rx, ushort ry, byte direction)
         {
-            Vector2 beamStart = this.ToNeighbourhoodVector(rx, ry);
+            Vector2 beamStart = ToNeighbourhoodVector(rx, ry);
             Rectangle beamRect = new Rectangle(beamStart.ToPoint(), this.beamSize);
             spriteBatch.Draw(
                 texture: Assets.BeamTexture,
@@ -67,7 +67,7 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
 
         private void DrawDot(SpriteBatch spriteBatch, NeighbourDot dot)
         {
-            Vector2 dotCenter = this.ToNeighbourhoodVector(dot.RX, dot.RY);
+            Vector2 dotCenter = ToNeighbourhoodVector(dot.RX, dot.RY);
             Rectangle dotRect = new Rectangle((dotCenter - this.dotOffset).ToPoint(), this.dotSize);
             spriteBatch.Draw(Assets.DotTexture, dotRect, this.configuration.Colors.Teams[dot.Team]);
         }

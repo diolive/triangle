@@ -33,20 +33,20 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
         {
             base.Draw(spriteBatch);
 
-            if (this.CurrentResponse == null)
+            if (CurrentResponse == null)
             {
                 return;
             }
 
-            foreach (var dot in this.CurrentResponse.RadarDots)
+            foreach (var dot in CurrentResponse.RadarDots)
             {
-                this.DrawRadarPoint(spriteBatch, dot.RX, dot.RY, dot.Team);
+                DrawRadarPoint(spriteBatch, dot.RX, dot.RY, dot.Team);
             }
         }
 
         private void DrawRadarPoint(SpriteBatch spriteBatch, byte rx, byte ry, int team)
         {
-            Vector2 dotCenter = this.ToRadarVector(rx, ry);
+            Vector2 dotCenter = ToRadarVector(rx, ry);
             Rectangle dotRect = new Rectangle((dotCenter - this.dotOffset).ToPoint(), this.dotSize);
             spriteBatch.Draw(Assets.DotTexture, dotRect, this.configuration.Colors.Teams[team]);
         }

@@ -48,7 +48,7 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
         {
             Vector2 dotCenter = ToRadarVector(rx, ry);
             Rectangle dotRect = new Rectangle((dotCenter - this.dotOffset).ToPoint(), this.dotSize);
-            spriteBatch.Draw(Assets.DotTexture, dotRect, this.configuration.Colors.Teams[team]);
+            spriteBatch.Draw(Assets.Textures.Dot, dotRect, this.configuration.Colors.Teams[team]);
         }
 
         private Vector2 ToRadarVector(byte rx, byte ry)

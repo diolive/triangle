@@ -27,7 +27,7 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
             this.dotSize = new Point(2 * Constants.UI.DotRadius * Constants.UI.NeighbourhoodSize / Constants.Space.Scope);
             this.dotOffset = this.dotSize.ToVector2() / 2f;
             this.beamSize = new Point(Constants.UI.BeamLength * Constants.UI.NeighbourhoodSize / Constants.Space.Scope, Constants.UI.BeamWidth * Constants.UI.NeighbourhoodSize / Constants.Space.Scope);
-            this.beamOffset = new Vector2(0, Assets.BeamTexture.Height) / 2f;
+            this.beamOffset = new Vector2(0, Assets.Textures.Beam.Height) / 2f;
             this.scale = (float)Constants.UI.NeighbourhoodSize / ushort.MaxValue;
         }
 
@@ -58,7 +58,7 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
             Vector2 beamStart = ToNeighbourhoodVector(rx, ry);
             Rectangle beamRect = new Rectangle(beamStart.ToPoint(), this.beamSize);
             spriteBatch.Draw(
-                texture: Assets.BeamTexture,
+                texture: Assets.Textures.Beam,
                 destinationRectangle: beamRect,
                 origin: this.beamOffset,
                 rotation: (float)AngleHelper.DirectionToRadians(direction),
@@ -69,7 +69,7 @@ namespace DioLive.Triangle.DesktopClient.GameObjects
         {
             Vector2 dotCenter = ToNeighbourhoodVector(dot.RX, dot.RY);
             Rectangle dotRect = new Rectangle((dotCenter - this.dotOffset).ToPoint(), this.dotSize);
-            spriteBatch.Draw(Assets.DotTexture, dotRect, this.configuration.Colors.Teams[dot.Team]);
+            spriteBatch.Draw(Assets.Textures.Dot, dotRect, this.configuration.Colors.Teams[dot.Team]);
         }
 
         private Vector2 ToNeighbourhoodVector(ushort rx, ushort ry)

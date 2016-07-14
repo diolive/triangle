@@ -5,14 +5,25 @@ namespace DioLive.Triangle.DesktopClient
 {
     public static class Assets
     {
-        public static Texture2D BeamTexture { get; set; }
-
-        public static Texture2D DotTexture { get; set; }
+        private static ContentManager Content;
 
         public static void Load(ContentManager content)
         {
-            DotTexture = content.Load<Texture2D>("dot");
-            BeamTexture = content.Load<Texture2D>("rounded");
+            Content = content;
         }
+
+        public static class Textures
+        {
+            public static Texture2D Beam { get; set; }
+
+            public static Texture2D Dot { get; set; }
+
+            static Textures()
+            {
+                Dot = Content.Load<Texture2D>("dot");
+                Beam = Content.Load<Texture2D>("rounded");
+            }
+        }
+
     }
 }

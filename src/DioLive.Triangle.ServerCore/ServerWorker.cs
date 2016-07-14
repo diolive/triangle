@@ -93,18 +93,6 @@ namespace DioLive.Triangle.ServerCore
                 this.cancellationToken);
         }
 
-        // HACK: Debug use only
-        public async Task GetAdminAsync(IOwinContext context)
-        {
-            var dots = this.space.GetAllDots().ToArray();
-            await context.Response.WriteJsonAsync(dots);
-        }
-
-        public void GetAdmin(IOwinContext context)
-        {
-            GetAdminAsync(context).Wait();
-        }
-
         private dynamic GetClient(Guid id)
         {
             if (!this.clients.ContainsKey(id))

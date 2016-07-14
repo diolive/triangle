@@ -187,10 +187,6 @@
       <Project>{2ca73c3c-b4f9-4ec5-a7ea-15decd4cd819}</Project>
       <Name>DioLive.Triangle.DataStorage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DioLive.Triangle.DesktopClient\DioLive.Triangle.DesktopClient.csproj">
-      <Project>{812BE082-557C-4C42-96DD-E3DF7D36478B}</Project>
-      <Name>DioLive.Triangle.DesktopClient</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
